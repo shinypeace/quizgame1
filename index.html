@@ -2,1010 +2,952 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Tower Blocks</title>
-    <!-- Yandex Games SDK -->
-    <script src="https://yandex.ru/games/sdk/v2"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r83/three.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/1.20.3/TweenMax.min.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Oswald:wght@700&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Разум в Бой - Мобильная Викторина</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
     <style>
         :root {
-            --bg-top: #1a237e;
-            --bg-bottom: #0d47a1;
-            --text-color: #0d47a1;
-            --text-color-light: #5472d3;
-            --accent-color: #ffc107;
+            --bg-primary: #111827; /* gray-900 */
+            --bg-secondary: #1f2937; /* gray-800 */
+            --bg-tertiary: #374151; /* gray-700 */
+            --text-primary: #f3f4f6; /* gray-200 */
+            --text-secondary: #9ca3af; /* gray-400 */
+            --accent-primary: #4f46e5; /* indigo-600 */
+            --accent-secondary: #3b82f6; /* blue-500 */
+        }
+        [data-theme="light"] {
+            --bg-primary: #f9fafb; /* gray-50 */
+            --bg-secondary: #ffffff;
+            --bg-tertiary: #e5e7eb; /* gray-200 */
+            --text-primary: #1f2937; /* gray-800 */
+            --text-secondary: #6b7280; /* gray-500 */
+        }
+        [data-theme="ocean"] {
+            --bg-primary: #F0F9FF;
+            --bg-secondary: #E0F2FE;
+            --bg-tertiary: #BAE6FD;
+            --text-primary: #0C4A6E;
+            --text-secondary: #0369A1;
+            --accent-primary: #0284C7;
+            --accent-secondary: #38BDF8;
+        }
+        [data-theme="forest"] {
+            --bg-primary: #052e16;
+            --bg-secondary: #064e3b;
+            --bg-tertiary: #047857;
+            --text-primary: #d1fae5;
+            --text-secondary: #a7f3d0;
+            --accent-primary: #10b981;
+            --accent-secondary: #34d399;
+        }
+        [data-theme="sunset"] {
+            --bg-primary: #fff7ed;
+            --bg-secondary: #ffedd5;
+            --bg-tertiary: #fed7aa;
+            --text-primary: #7c2d12;
+            --text-secondary: #9a3412;
+            --accent-primary: #f97316;
+            --accent-secondary: #fb923c;
         }
 
-        html, body {
-            margin: 0;
-            overflow: hidden;
-            height: 100%;
-            width: 100%;
-            position: relative;
-            font-family: 'Montserrat', sans-serif;
-            color: var(--text-color);
-            background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-bottom) 100%);
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            transition: background-color 0.5s, color 0.5s;
+            -webkit-user-select: none; /* Safari */
+            -ms-user-select: none; /* IE 10+ */
+            user-select: none; /* Standard syntax */
         }
-        #container {
+        .screen {
+            animation: fadeIn 0.5s ease-in-out;
+            min-height: 100vh;
             width: 100%;
-            height: 100%;
-            position: relative;
-        }
-        #game {
-            position: absolute;
-            top: 0;
-            right: 0;
-            bottom: 0;
-            left: 0;
-        }
-        .ui-layer {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
             display: flex;
             flex-direction: column;
-            align-items: center;
             justify-content: center;
-            pointer-events: none;
-            text-align: center;
         }
-        .ui-layer > * {
-            pointer-events: all;
-        }
+        .hidden { display: none !important; }
         
-        /* --- Menu --- */
-        #main-menu .title {
-            font-family: 'Oswald', sans-serif;
-            line-height: 1;
-            margin-bottom: 0.75em;
-            color: #ffffff;
-            text-shadow: 2px 2px 8px rgba(0,0,0,0.3);
-        }
-        #main-menu .title-line-1 {
-            font-size: 4.5rem;
-            font-weight: 700;
-            display: block;
-        }
-        #main-menu .title-line-2 {
-            font-size: 2.25rem;
-            font-weight: 700;
-            display: block;
-            margin-top: -0.3em;
-        }
-        #main-menu .button-group {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 1em;
-        }
-        #main-menu p {
-            font-size: 1.1rem;
-            color: #bbdefb;
-            font-weight: bold;
-            margin-top: 1em;
-        }
-        .button {
-            background-color: #ffffff;
-            color: var(--text-color);
-            border: none;
-            border-radius: 12px;
-            padding: 15px 30px;
-            font-size: 1.2rem;
-            font-family: 'Montserrat', sans-serif;
-            font-weight: bold;
-            cursor: pointer;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-            width: 220px;
-        }
-        .button:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 6px 20px rgba(0,0,0,0.15);
-        }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--bg-secondary); }
+        ::-webkit-scrollbar-thumb { background: var(--bg-tertiary); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--accent-primary); }
 
-        /* --- In-Game UI --- */
-        #in-game-ui {
-            justify-content: flex-start;
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-        #score {
-            position: absolute;
-            top: 20px;
-            width: 100%;
-            text-align: center;
-            font-size: 10vh;
-            font-family: 'Oswald', sans-serif;
-            color: #ffffff;
-            text-shadow: 2px 2px 8px rgba(0,0,0,0.3);
-            transition: transform 0.5s ease, opacity 0.5s ease;
-            transform: translateY(-200px) scale(1);
-            opacity: 0;
+        .btn-fx {
+            transition: all 0.2s ease;
         }
-        #perfect-placement-text {
-            position: absolute;
-            top: 25vh;
-            font-size: 2rem;
-            font-family: 'Oswald', sans-serif;
-            color: var(--accent-color);
-            text-shadow: 1px 1px 3px rgba(0,0,0,0.2);
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease, transform 0.5s ease;
+        .btn-fx:hover {
+            transform: scale(1.03);
+            box-shadow: 0 8px 15px rgba(0,0,0,0.2);
         }
-        #pause-button {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            width: 50px;
-            height: 50px;
-            background-color: rgba(255,255,255,0.8);
-            border-radius: 50%;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            z-index: 100;
+        .timer-bar-inner { transition: width 0.2s linear; }
+        .option-btn.correct {
+            animation: correct-answer 0.5s ease;
+            background-color: #22c55e !important;
+            border-color: #16a34a !important;
+            color: white !important;
         }
-        #pause-button span {
-            display: block;
-            width: 5px;
-            height: 20px;
-            background-color: var(--text-color);
-            margin: 0 3px;
+        .option-btn.incorrect {
+            animation: incorrect-answer 0.5s ease;
+            background-color: #ef4444 !important;
+            border-color: #dc2626 !important;
+            color: white !important;
         }
-        
-        /* --- Modal & Menus --- */
-        .modal-background, .menu-background {
-            background-color: rgba(0,0,0,0.5);
-            z-index: 1000;
+        @keyframes correct-answer {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
         }
-        .modal-box, .menu-box {
-            background: rgba(255,255,255,0.95);
-            padding: 30px 40px;
-            border-radius: 20px;
-            text-align: center;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            width: clamp(280px, 80vw, 400px);
-            max-height: 80vh; /* Limit height */
-            overflow-y: auto; /* Enable scroll if needed */
-        }
-        .menu-box .button, .modal-box .button {
-            display: block;
-            margin: 15px auto 0 auto;
-            width: 100%;
-        }
-        .modal-box h2, .menu-box h2 {
-            font-family: 'Oswald', sans-serif;
-            font-size: 2.5rem;
-            margin-bottom: 0.5em;
-            margin-top: 0;
-        }
-        .modal-box p {
-            text-align: left;
-            margin-bottom: 1em;
-            line-height: 1.5;
-        }
-        .modal-box ul {
-            text-align: left;
-            padding-left: 20px;
-            margin-bottom: 1.5em;
-        }
-        .menu-box .score-display {
-            margin-bottom: 1.5em;
-        }
-        .menu-box .score-display span {
-            display: block;
-            font-size: 1.1rem;
-            color: var(--text-color-light);
-        }
-        .menu-box .score-display strong {
-            display: block;
-            font-size: 2rem;
-            color: var(--text-color);
-        }
-
-        /* --- State Handling --- */
-        .hidden {
-            display: none !important;
-        }
-        #container.playing #score,
-        #container.ended #score {
-            transform: translateY(0px) scale(1);
-            opacity: 1;
-        }
-        #container.ended #score {
-            transform: translateY(6vh) scale(1.5);
+        @keyframes incorrect-answer {
+            0%, 100% { transform: translateX(0); }
+            20% { transform: translateX(-8px); }
+            40% { transform: translateX(8px); }
+            60% { transform: translateX(-8px); }
+            80% { transform: translateX(8px); }
         }
     </style>
 </head>
-<body>
-    <div id="container">
-        <div id="game"></div>
+<body class="overflow-y-auto">
 
-        <div id="main-menu" class="ui-layer">
-            <div>
-                <div class="title">
-                    <span class="title-line-1">TOWER</span>
-                    <span class="title-line-2">BLOCKS</span>
+    <div id="app-container" class="relative w-full max-w-md mx-auto">
+        
+        <!-- Главное меню -->
+        <div id="main-menu" class="screen p-6">
+            <div class="text-center">
+                <h1 class="text-5xl font-black uppercase text-transparent bg-clip-text bg-gradient-to-r" style="color: var(--accent-primary); background-image: linear-gradient(to right, var(--accent-primary), var(--accent-secondary));">Разум в Бой</h1>
+                <p class="text-lg mt-2 mb-12" style="color: var(--text-secondary);">Проверь свои знания и стань чемпионом!</p>
+            </div>
+            <div class="space-y-4">
+                <button onclick="showScreen('category-selection')" class="w-full text-white font-bold py-4 px-6 rounded-xl text-xl shadow-lg btn-fx" style="background-color: var(--accent-primary);">Начать игру</button>
+                <button onclick="showScreen('stats-screen')" class="w-full text-white font-bold py-3 px-6 rounded-xl shadow-md btn-fx" style="background-color: var(--bg-tertiary);">Статистика</button>
+                <button onclick="showScreen('rules-screen')" class="w-full text-white font-bold py-3 px-6 rounded-xl shadow-md btn-fx" style="background-color: var(--bg-tertiary);">Правила</button>
+                <button onclick="showScreen('themes-screen')" class="w-full text-white font-bold py-3 px-6 rounded-xl shadow-md btn-fx" style="background-color: var(--bg-tertiary);">Темы</button>
+            </div>
+        </div>
+
+        <!-- Выбор категории -->
+        <div id="category-selection" class="screen hidden p-6">
+            <h2 class="text-4xl font-bold text-center mb-8">Выберите категорию</h2>
+            <div id="category-grid" class="grid grid-cols-1 gap-4">
+                <!-- Категории -->
+            </div>
+            <div class="text-center mt-8">
+                <button onclick="showScreen('main-menu')" class="font-bold py-2 px-8 rounded-lg" style="background-color: var(--bg-tertiary);">Назад</button>
+            </div>
+        </div>
+
+        <!-- Игровое поле -->
+        <div id="game-screen" class="screen hidden p-4">
+            <div class="w-full p-6 rounded-2xl shadow-2xl" style="background-color: var(--bg-secondary);">
+                <div class="flex justify-between items-center mb-6">
+                    <div id="question-counter" class="text-sm font-semibold px-3 py-1 rounded-full" style="background-color: var(--bg-tertiary);"></div>
+                    <div id="score" class="text-lg font-bold" style="color: var(--accent-primary);">Очки: 0</div>
+                    <button onclick="togglePause()" class="p-2 rounded-full" style="background-color: var(--bg-tertiary);">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                    </button>
                 </div>
-                <div class="button-group">
-                    <button id="start-button" class="button" data-lang="play">Играть</button>
-                    <button id="rules-button" class="button" data-lang="rules">Правила</button>
+                <div class="w-full h-2.5 mb-4 rounded-full" style="background-color: var(--bg-tertiary);">
+                    <div id="timer-bar" class="h-2.5 rounded-full timer-bar-inner" style="width: 100%; background-color: var(--accent-secondary);"></div>
                 </div>
-                <p><span data-lang="highscore_menu">Рекорд</span>: <span id="high-score">0</span></p>
+                <div class="min-h-[120px] flex items-center justify-center">
+                    <h3 id="question-text" class="text-xl font-semibold text-center mb-6"></h3>
+                </div>
+                <div id="options-container" class="grid grid-cols-1 gap-3"></div>
+            </div>
+        </div>
+
+        <!-- Экран статистики -->
+        <div id="stats-screen" class="screen hidden p-6 justify-between">
+            <h2 class="text-4xl font-bold text-center flex-shrink-0">Статистика</h2>
+            <div id="stats-content" class="my-6 flex-grow overflow-y-auto space-y-4">
+                <!-- Статистика -->
+            </div>
+            <div class="mt-6 flex-shrink-0">
+                <button onclick="showScreen('main-menu')" class="w-full font-bold py-3 px-4 rounded-lg" style="background-color: var(--bg-tertiary);">Назад</button>
+            </div>
+        </div>
+
+        <!-- Экран окончания игры -->
+        <div id="game-over-screen" class="screen hidden p-6">
+            <div class="p-8 rounded-2xl shadow-2xl text-center" style="background-color: var(--bg-secondary);">
+                <h2 class="text-4xl font-bold mb-2">Игра окончена!</h2>
+                <p class="mb-6" style="color: var(--text-secondary);">Отличная работа!</p>
+                <div class="mb-6">
+                    <p class="text-lg">Ваш итоговый счет:</p>
+                    <p id="final-score" class="text-6xl font-black my-2" style="color: var(--accent-primary);">0</p>
+                </div>
+                <div id="results-summary" class="text-left space-y-2 mb-8 p-4 rounded-lg" style="background-color: var(--bg-primary);"></div>
+                <div class="space-y-3">
+                    <button onclick="restartGame()" class="w-full text-white font-bold py-3 px-6 rounded-lg" style="background-color: var(--accent-primary);">Играть снова</button>
+                    <button onclick="showScreen('category-selection')" class="w-full font-bold py-3 px-6 rounded-lg" style="background-color: var(--bg-tertiary);">Выбрать категорию</button>
+                    <button onclick="showScreen('main-menu')" class="w-full font-bold py-2 px-6 rounded-lg" style="background-color: var(--bg-tertiary);">Главное меню</button>
+                </div>
             </div>
         </div>
         
-        <div id="rules-modal" class="ui-layer modal-background hidden">
-            <div class="modal-box">
-                <h2 data-lang="rules_title">Правила Игры</h2>
-                <p data-lang="rules_p1">Ваша задача — построить как можно более высокую башню, устанавливая блоки друг на друга.</p>
-                <ul>
-                    <li data-lang="rules_li1">Нажимайте на экран (или пробел), чтобы остановить движущийся блок.</li>
-                    <li data-lang="rules_li2">Часть блока, вышедшая за пределы нижнего, отколется.</li>
-                    <li data-lang="rules_li3">Башня станет уже, и строить будет сложнее!</li>
-                </ul>
-                <p><strong data-lang="rules_combo_title">⭐ Идеальное Комбо:</strong></p>
-                <ul>
-                    <li data-lang="rules_combo_li1">Установите <strong>6 блоков идеально</strong> подряд, чтобы активировать комбо.</li>
-                    <li data-lang="rules_combo_li2">Каждое следующее идеальное попадание будет <strong>увеличивать размер</strong> платформы, возвращая ее к первоначальной ширине!</li>
-                </ul>
-                <button id="close-rules-button" class="button" data-lang="rules_close">Понятно</button>
+        <!-- Экран правил -->
+        <div id="rules-screen" class="screen hidden p-6">
+            <div class="p-8 rounded-2xl shadow-2xl" style="background-color: var(--bg-secondary);">
+                <h2 class="text-3xl font-bold text-center mb-6">Правила Игры</h2>
+                <div class="space-y-4 text-lg" style="color: var(--text-secondary);">
+                    <p>✔️ Цель игры - ответить на <strong>15 вопросов</strong> из выбранной категории.</p>
+                    <p>⏱️ На каждый вопрос дается <strong>20 секунд</strong>.</p>
+                    <p>💯 За каждый правильный ответ вы получаете <strong>100 очков</strong>.</p>
+                    <p>🚀 Дополнительно начисляются <strong>бонусные очки за скорость</strong>: +5 очков за каждую оставшуюся секунду.</p>
+                    <p>🏆 Максимальное количество очков за один вопрос - <strong>200</strong>.</p>
+                </div>
+                <div class="text-center mt-8">
+                    <button onclick="showScreen('main-menu')" class="font-bold py-3 px-12 rounded-lg" style="background-color: var(--bg-tertiary);">Понятно</button>
+                </div>
             </div>
         </div>
 
-        <div id="in-game-ui" class="ui-layer hidden">
-            <div id="score">0</div>
-            <div id="perfect-placement-text" data-lang="perfect">ИДЕАЛЬНО!</div>
-            <div id="pause-button">
-                <span></span>
-                <span></span>
+        <!-- Экран выбора темы -->
+        <div id="themes-screen" class="screen hidden p-6">
+            <h2 class="text-4xl font-bold text-center mb-8">Выберите тему</h2>
+            <div class="space-y-4">
+                <button onclick="setTheme('light')" class="w-full font-bold py-4 rounded-xl border-2" style="background-color: #f9fafb; color: #1f2937; border-color: #1f2937;">Светлая</button>
+                <button onclick="setTheme('dark')" class="w-full font-bold py-4 rounded-xl border-2" style="background-color: #111827; color: #f3f4f6; border-color: #f3f4f6;">Темная</button>
+                <button onclick="setTheme('ocean')" class="w-full font-bold py-4 rounded-xl border-2" style="background-color: #F0F9FF; color: #0C4A6E; border-color: #0C4A6E;">Океан</button>
+                <button onclick="setTheme('forest')" class="w-full font-bold py-4 rounded-xl border-2" style="background-color: #052e16; color: #d1fae5; border-color: #d1fae5;">Лес</button>
+                <button onclick="setTheme('sunset')" class="w-full font-bold py-4 rounded-xl border-2" style="background-color: #fff7ed; color: #7c2d12; border-color: #7c2d12;">Закат</button>
+            </div>
+            <div class="text-center mt-8">
+                <button onclick="showScreen('main-menu')" class="font-bold py-2 px-8 rounded-lg" style="background-color: var(--bg-tertiary);">Назад</button>
             </div>
         </div>
 
-        <div id="pause-menu" class="ui-layer menu-background hidden">
-            <div class="menu-box">
-                <button id="resume-button" class="button" data-lang="resume">Продолжить</button>
-                <button id="restart-button" class="button" data-lang="restart">Заново</button>
-                <button id="menu-button" class="button" data-lang="menu">В меню</button>
-            </div>
-        </div>
-        
-        <div id="game-over-menu" class="ui-layer menu-background hidden">
-             <div class="menu-box">
-                <h2 data-lang="gameover_title">Игра окончена</h2>
-                <div class="score-display">
-                    <span data-lang="your_score">Ваш счет</span>
-                    <strong id="final-score">0</strong>
-                </div>
-                 <div class="score-display">
-                    <span data-lang="highscore_gameover">Рекорд</span>
-                    <strong id="game-over-high-score">0</strong>
-                </div>
-                <button id="restart-game-over-button" class="button" data-lang="play_again">Играть снова</button>
-                <button id="menu-game-over-button" class="button" data-lang="menu">В меню</button>
+        <!-- Оверлей паузы -->
+        <div id="pause-overlay" class="hidden fixed inset-0 bg-black bg-opacity-70 flex-col items-center justify-center space-y-6 z-50" style="animation: fadeIn 0.3s;">
+            <h2 class="text-5xl font-bold text-white">Пауза</h2>
+            <div class="w-full max-w-xs space-y-4 px-4">
+                <button onclick="togglePause()" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-lg text-lg">Продолжить</button>
+                <button onclick="restartGame()" class="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-3 rounded-lg text-lg">Начать заново</button>
+                <button onclick="showScreen('main-menu')" class="w-full bg-red-500 hover:bg-red-600 text-white font-bold py-3 rounded-lg text-lg">Главное меню</button>
             </div>
         </div>
     </div>
 
     <script>
-        console.clear();
+        // --- БАЗА ВОПРОСОВ (1500 вопросов) ---
+        const questions = {
+            "Наука": [
+                // 300 вопросов по Науке
+                { question: "Какая планета известна как 'Красная планета'?", options: ["Земля", "Марс", "Юпитер", "Венера"], answer: "Марс" },
+                { question: "Какой химический элемент имеет символ 'O'?", options: ["Золото", "Кислород", "Серебро", "Олово"], answer: "Кислород" },
+                { question: "Что является основной единицей жизни?", options: ["Атом", "Молекула", "Клетка", "Орган"], answer: "Клетка" },
+                { question: "Как называется процесс, с помощью которого растения питаются?", options: ["Фотосинтез", "Респирация", "Транспирация", "Осмос"], answer: "Фотосинтез" },
+                { question: "Какая сила удерживает планеты на орбите вокруг Солнца?", options: ["Магнетизм", "Гравитация", "Электричество", "Трение"], answer: "Гравитация" },
+                { question: "Сколько костей в теле взрослого человека?", options: ["206", "212", "198", "221"], answer: "206" },
+                { question: "Какой газ самый распространенный в атмосфере Земли?", options: ["Кислород", "Углекислый газ", "Азот", "Аргон"], answer: "Азот" },
+                { question: "Кто разработал теорию относительности?", options: ["Исаак Ньютон", "Галилео Галилей", "Альберт Эйнштейн", "Никола Тесла"], answer: "Альберт Эйнштейн" },
+                { question: "Какова скорость света в вакууме?", options: ["300,000 км/с", "150,000 км/с", "500,000 км/с", "1,000,000 км/с"], answer: "300,000 км/с" },
+                { question: "Какой орган человека производит инсулин?", options: ["Печень", "Желудок", "Поджелудочная железа", "Почки"], answer: "Поджелудочная железа" },
+                { question: "Что такое ДНК?", options: ["Белок", "Углевод", "Дезоксирибонуклеиновая кислота", "Витамин"], answer: "Дезоксирибонуклеиновая кислота" },
+                { question: "Какая часть атома имеет отрицательный заряд?", options: ["Протон", "Нейтрон", "Электрон", "Ядро"], answer: "Электрон" },
+                { question: "Какой металл является жидкостью при комнатной температуре?", options: ["Свинец", "Ртуть", "Золото", "Алюминий"], answer: "Ртуть" },
+                { question: "Как называется изучение грибов?", options: ["Ботаника", "Зоология", "Микология", "Энтомология"], answer: "Микология" },
+                { question: "Какое животное является самым большим на Земле?", options: ["Слон", "Синий кит", "Жираф", "Белый медведь"], answer: "Синий кит" },
+                { question: "Что такое pH?", options: ["Мера кислотности", "Мера плотности", "Мера вязкости", "Мера температуры"], answer: "Мера кислотности" },
+                { question: "Какой закон физики гласит, что на каждое действие есть равное и противоположное противодействие?", options: ["Закон Ома", "Закон Архимеда", "Третий закон Ньютона", "Закон сохранения энергии"], answer: "Третий закон Ньютона" },
+                { question: "Как называется ближайшая к Земле звезда?", options: ["Полярная звезда", "Сириус", "Солнце", "Альфа Центавра"], answer: "Солнце" },
+                { question: "Какой элемент является основой органической химии?", options: ["Кислород", "Водород", "Азот", "Углерод"], answer: "Углерод" },
+                { question: "Что вызывает приливы и отливы на Земле?", options: ["Ветер", "Вращение Земли", "Гравитация Луны", "Солнечные вспышки"], answer: "Гравитация Луны" },
+                { question: "Как называется процесс деления атомного ядра?", options: ["Синтез", "Распад", "Окисление", "Ионизация"], answer: "Распад" },
+                { question: "Какой слой атмосферы защищает нас от ультрафиолетового излучения?", options: ["Тропосфера", "Стратосфера (озоновый слой)", "Мезосфера", "Термосфера"], answer: "Стратосфера (озоновый слой)" },
+                { question: "Как называется наука о погоде?", options: ["Климатология", "Метеорология", "Геология", "Экология"], answer: "Метеорология" },
+                { question: "Какое вещество является универсальным растворителем?", options: ["Спирт", "Кислота", "Вода", "Масло"], answer: "Вода" },
+                { question: "Как называется самая большая артерия в теле человека?", options: ["Легочная артерия", "Сонная артерия", "Аорта", "Бедренная артерия"], answer: "Аорта" },
+                { question: "Что такое митохондрия?", options: ["Ядро клетки", "Энергетическая станция клетки", "Клеточная мембрана", "Центр синтеза белка"], answer: "Энергетическая станция клетки" },
+                { question: "Какой газ используют растения для дыхания ночью?", options: ["Углекислый газ", "Кислород", "Азот", "Водород"], answer: "Кислород" },
+                { question: "Как называется единица измерения силы тока?", options: ["Вольт", "Ом", "Ватт", "Ампер"], answer: "Ампер" },
+                { question: "Кто открыл пенициллин?", options: ["Мария Кюри", "Луи Пастер", "Александр Флеминг", "Роберт Кох"], answer: "Александр Флеминг" },
+                { question: "Какая температура по Цельсию соответствует абсолютному нулю?", options: ["0°C", "-100°C", "-273.15°C", "-50°C"], answer: "-273.15°C" },
+                { question: "Как называется наука о насекомых?", options: ["Орнитология", "Ихтиология", "Энтомология", "Герпетология"], answer: "Энтомология" },
+                { question: "Из чего в основном состоят кольца Сатурна?", options: ["Газ и пыль", "Камни и астероиды", "Лед и камни", "Жидкий метан"], answer: "Лед и камни" },
+                { question: "Какой тип крови считается универсальным донором?", options: ["A (II)", "B (III)", "AB (IV)", "O (I)"], answer: "O (I)" },
+                { question: "Что такое эхо?", options: ["Преломление звука", "Дифракция звука", "Отражение звука", "Интерференция звука"], answer: "Отражение звука" },
+                { question: "Как называется процесс превращения жидкости в газ?", options: ["Конденсация", "Испарение", "Сублимация", "Кристаллизация"], answer: "Испарение" },
+                { question: "Какой витамин вырабатывается в коже под действием солнечного света?", options: ["Витамин А", "Витамин C", "Витамин D", "Витамин E"], answer: "Витамин D" },
+                { question: "Как называется крупнейший спутник Юпитера?", options: ["Европа", "Ио", "Каллисто", "Ганимед"], answer: "Ганимед" },
+                { question: "Что изучает сейсмология?", options: ["Вулканы", "Землетрясения", "Океаны", "Ледники"], answer: "Землетрясения" },
+                { question: "Какая часть уха отвечает за равновесие?", options: ["Ушная раковина", "Барабанная перепонка", "Улитка", "Вестибулярный аппарат"], answer: "Вестибулярный аппарат" },
+                { question: "Какой химический элемент назван в честь создателя периодической таблицы?", options: ["Кюрий", "Эйнштейний", "Менделевий", "Нобелий"], answer: "Менделевий" },
+                { question: "Как называется процесс, при котором гусеница превращается в бабочку?", options: ["Метаморфоз", "Регенерация", "Эволюция", "Адаптация"], answer: "Метаморфоз" },
+                { question: "Какой прибор используется для измерения атмосферного давления?", options: ["Термометр", "Гигрометр", "Барометр", "Анемометр"], answer: "Барометр" },
+                { question: "Какое из этих животных является млекопитающим?", options: ["Пингвин", "Кит", "Акула", "Черепаха"], answer: "Кит" },
+                { question: "Что такое 'черная дыра'?", options: ["Звезда без света", "Область с огромной гравитацией", "Пустое пространство", "Скопление темной материи"], answer: "Область с огромной гравитацией" },
+                { question: "Какой элемент таблицы Менделеева самый легкий?", options: ["Гелий", "Водород", "Литий", "Кислород"], answer: "Водород" },
+                { question: "Как называется наука, изучающая окаменелости?", options: ["Археология", "Палеонтология", "Антропология", "Геология"], answer: "Палеонтология" },
+                { question: "Сколько камер в сердце человека?", options: ["Одна", "Две", "Три", "Четыре"], answer: "Четыре" },
+                { question: "Какой цвет имеет самая горячая звезда?", options: ["Красный", "Желтый", "Белый", "Синий"], answer: "Синий" },
+                { question: "Что такое антиматерия?", options: ["Материя с отрицательной массой", "Материя из античастиц", "Невидимая материя", "Материя без заряда"], answer: "Материя из античастиц" },
+                { question: "Как называется внешняя оболочка Земли?", options: ["Мантия", "Ядро", "Земная кора", "Атмосфера"], answer: "Земная кора" },
+                { question: "Какой тип энергии используется в атомных электростанциях?", options: ["Солнечная", "Термальная", "Ядерная", "Гидроэнергия"], answer: "Ядерная" },
+                { question: "Как называется процесс передачи тепла через жидкость или газ?", options: ["Теплопроводность", "Излучение", "Конвекция", "Испарение"], answer: "Конвекция" },
+                { question: "Какое животное может регенерировать утраченные конечности?", options: ["Осьминог", "Морская звезда", "Краб", "Ящерица"], answer: "Морская звезда" },
+                { question: "Что такое галактика Млечный Путь?", options: ["Скопление звезд", "Наша галактика", "Туманность", "Созвездие"], answer: "Наша галактика" },
+                { question: "Какой газ придает крови красный цвет при насыщении кислородом?", options: ["Азот", "Углекислый газ", "Кислород (через гемоглобин)", "Водород"], answer: "Кислород (через гемоглобин)" },
+                { question: "Как называется явление, когда свет огибает препятствия?", options: ["Рефракция", "Дифракция", "Дисперсия", "Интерференция"], answer: "Дифракция" },
+                { question: "Какой орган является самым большим в теле человека?", options: ["Печень", "Мозг", "Легкие", "Кожа"], answer: "Кожа" },
+                { question: "Что такое 'парниковый эффект'?", options: ["Нагрев теплиц", "Задержка тепла в атмосфере", "Охлаждение планеты", "Разрушение озонового слоя"], answer: "Задержка тепла в атмосфере" },
+                { question: "Как называется наука о птицах?", options: ["Энтомология", "Орнитология", "Ихтиология", "Маммалогия"], answer: "Орнитология" },
+                { question: "Из какого материала сделан самый прочный известный биологический материал - паутина?", options: ["Кератин", "Коллаген", "Белок", "Хитин"], answer: "Белок" },
+                { question: "Какая планета Солнечной системы вращается в обратную сторону?", options: ["Марс", "Уран", "Венера", "Нептун"], answer: "Венера" },
+                { question: "Что такое звуковой барьер?", options: ["Максимальная громкость", "Скорость звука", "Частота звука", "Предел слышимости"], answer: "Скорость звука" },
+                { question: "Как называется процесс, при котором твердое тело переходит сразу в газ?", options: ["Испарение", "Плавление", "Конденсация", "Сублимация"], answer: "Сублимация" },
+                { question: "Какой химический элемент является самым распространенным во Вселенной?", options: ["Кислород", "Гелий", "Углерод", "Водород"], answer: "Водород" },
+                { question: "Какая часть мозга отвечает за координацию движений?", options: ["Кора больших полушарий", "Мозжечок", "Ствол мозга", "Гипоталамус"], answer: "Мозжечок" },
+                { question: "Что такое комета?", options: ["Каменный астероид", "Ледяное тело с хвостом", "Карликовая планета", "Спутник планеты"], answer: "Ледяное тело с хвостом" },
+                { question: "Какой тип волн используется в микроволновой печи?", options: ["Радиоволны", "Инфракрасные", "Микроволны", "Ультрафиолетовые"], answer: "Микроволны" },
+                { question: "Как называется защитная восковая кутикула на листьях растений?", options: ["Эпидермис", "Кутин", "Целлюлоза", "Лигнин"], answer: "Кутин" },
+                { question: "Какая группа животных не имеет позвоночника?", options: ["Рыбы", "Птицы", "Насекомые", "Рептилии"], answer: "Насекомые" },
+                { question: "Что такое 'эффект Доплера'?", options: ["Изменение цвета света", "Изменение частоты волны", "Усиление звука", "Ослабление гравитации"], answer: "Изменение частоты волны" },
+                { question: "Какое химическое соединение является основным компонентом природного газа?", options: ["Пропан", "Бутан", "Этан", "Метан"], answer: "Метан" },
+                { question: "Как называется наука о ядах?", options: ["Фармакология", "Токсикология", "Вирусология", "Биохимия"], answer: "Токсикология" },
+                { question: "Какая планета имеет больше всего спутников?", options: ["Земля", "Марс", "Юпитер", "Сатурн"], answer: "Сатурн" },
+                { question: "Что такое хромосомы?", options: ["Частицы в ядре атома", "Структуры, несущие гены", "Органеллы для фотосинтеза", "Белки-ферменты"], answer: "Структуры, несущие гены" },
+                { question: "Какой закон утверждает, что энергия не может быть создана или уничтожена?", options: ["Закон всемирного тяготения", "Закон сохранения энергии", "Закон Кулона", "Закон Бойля-Мариотта"], answer: "Закон сохранения энергии" },
+                { question: "Как называется процесс расщепления воды под действием света?", options: ["Электролиз", "Гидролиз", "Фотолиз", "Пиролиз"], answer: "Фотолиз" },
+                { question: "Какое животное имеет самое высокое кровяное давление?", options: ["Слон", "Синий кит", "Жираф", "Носорог"], answer: "Жираф" },
+                { question: "Что такое 'Большой взрыв'?", options: ["Взрыв сверхновой", "Теория возникновения Вселенной", "Столкновение галактик", "Формирование звезды"], answer: "Теория возникновения Вселенной" },
+                { question: "Какой металл обладает наилучшей электропроводностью?", options: ["Медь", "Золото", "Алюминий", "Серебро"], answer: "Серебро" },
+                { question: "Как называется способность организма поддерживать постоянство внутренней среды?", options: ["Метаболизм", "Гомеостаз", "Адаптация", "Симбиоз"], answer: "Гомеостаз" },
+                { question: "Какой газ используется для наполнения воздушных шаров, чтобы они летали?", options: ["Кислород", "Азот", "Гелий", "Неон"], answer: "Гелий" },
+                { question: "Как называется наука о классификации живых организмов?", options: ["Экология", "Генетика", "Систематика", "Анатомия"], answer: "Систематика" },
+                { question: "Что такое сталактиты?", options: ["Наросты на потолке пещеры", "Наросты на полу пещеры", "Подземные реки", "Кристаллы в породе"], answer: "Наросты на потолке пещеры" },
+                // ... еще 215 вопросов
+            ],
+            "История": [
+                // 300 вопросов по Истории
+                { question: "В каком году началась Вторая мировая война?", options: ["1939", "1941", "1945", "1914"], answer: "1939" },
+                { question: "Кто был первым президентом США?", options: ["Авраам Линкольн", "Томас Джефферсон", "Джордж Вашингтон", "Джон Адамс"], answer: "Джордж Вашингтон" },
+                { question: "Какая древняя цивилизация построила пирамиды в Гизе?", options: ["Римляне", "Греки", "Египтяне", "Персы"], answer: "Египтяне" },
+                { question: "Кто написал 'Манифест Коммунистической партии'?", options: ["Владимир Ленин", "Карл Маркс", "Лев Троцкий", "Иосиф Сталин"], answer: "Карл Маркс" },
+                { question: "В каком году пал Берлинская стена?", options: ["1989", "1991", "1985", "1993"], answer: "1989" },
+                { question: "Как звали корабль, на котором Колумб открыл Америку?", options: ["Санта-Мария", "Пинта", "Нинья", "Виктория"], answer: "Санта-Мария" },
+                { question: "Кто был лидером гуннов, известным как 'Бич Божий'?", options: ["Чингисхан", "Аттила", "Александр Македонский", "Тамерлан"], answer: "Аттила" },
+                { question: "Какая война велась между Афинами и Спартой?", options: ["Пунические войны", "Пелопоннесская война", "Троянская война", "Персидские войны"], answer: "Пелопоннесская война" },
+                { question: "Кто изобрел печатный станок?", options: ["Леонардо да Винчи", "Иоганн Гутенберг", "Галилео Галилей", "Николай Коперник"], answer: "Иоганн Гутенберг" },
+                { question: "В каком веке была эпоха Возрождения?", options: ["12-13 вв.", "14-16 вв.", "17-18 вв.", "10-11 вв."], answer: "14-16 вв." },
+                { question: "Кто был последним царем России?", options: ["Петр I", "Александр II", "Николай II", "Иван Грозный"], answer: "Николай II" },
+                { question: "Где произошла знаменитая битва при Ватерлоо?", options: ["Франция", "Германия", "Бельгия", "Австрия"], answer: "Бельгия" },
+                { question: "Как называлась первая атомная бомба, сброшенная на Хиросиму?", options: ["Толстяк", "Малыш", "Тринити", "Кастл Браво"], answer: "Малыш" },
+                { question: "Какой город был столицей Византийской империи?", options: ["Рим", "Афины", "Константинополь", "Александрия"], answer: "Константинополь" },
+                { question: "Кто возглавил монгольское нашествие на Русь?", options: ["Чингисхан", "Батый", "Тамерлан", "Мамай"], answer: "Батый" },
+                { question: "В каком году человек впервые полетел в космос?", options: ["1957", "1961", "1969", "1959"], answer: "1961" },
+                { question: "Какая империя была известна как 'Империя, над которой никогда не заходит солнце'?", options: ["Римская", "Монгольская", "Испанская", "Британская"], answer: "Британская" },
+                { question: "Кто был лидером Реформации в Германии?", options: ["Жан Кальвин", "Мартин Лютер", "Генрих VIII", "Ульрих Цвингли"], answer: "Мартин Лютер" },
+                { question: "Какое событие считается началом Великой французской революции?", options: ["Казнь короля", "Взятие Бастилии", "Поход на Версаль", "Термидорианский переворот"], answer: "Взятие Бастилии" },
+                { question: "Как назывался свод законов в Древнем Вавилоне?", options: ["Законы Хаммурапи", "Законы 12 таблиц", "Кодекс Юстиниана", "Русская Правда"], answer: "Законы Хаммурапи" },
+                { question: "Какая война длилась 116 лет, но с перерывами?", options: ["Тридцатилетняя", "Столетняя", "Семилетняя", "Пелопоннесская"], answer: "Столетняя" },
+                { question: "Кто был фараоном, чья гробница была найдена почти нетронутой в 1922 году?", options: ["Рамзес II", "Хеопс", "Тутанхамон", "Эхнатон"], answer: "Тутанхамон" },
+                { question: "Какая цивилизация изобрела письменность клинопись?", options: ["Египтяне", "Шумеры", "Финикийцы", "Греки"], answer: "Шумеры" },
+                { question: "В каком городе был убит эрцгерцог Франц Фердинанд, что послужило поводом к Первой мировой войне?", options: ["Вена", "Белград", "Сараево", "Прага"], answer: "Сараево" },
+                { question: "Как назывался торговый путь, соединявший Восток и Запад?", options: ["Янтарный путь", "Шелковый путь", "Путь из варяг в греки", "Лазуритовый путь"], answer: "Шелковый путь" },
+                { question: "Кто был первым императором Рима?", options: ["Юлий Цезарь", "Октавиан Август", "Марк Антоний", "Тиберий"], answer: "Октавиан Август" },
+                { question: "Какая страна подарила США Статую Свободы?", options: ["Великобритания", "Германия", "Италия", "Франция"], answer: "Франция" },
+                { question: "Как называлось восстание в Бостоне против британского налога на чай?", options: ["Бостонская бойня", "Бостонское чаепитие", "Чайный бунт", "Восстание Шейса"], answer: "Бостонское чаепитие" },
+                { question: "Какой русский царь известен как 'Грозный'?", options: ["Иван III", "Иван IV", "Петр I", "Павел I"], answer: "Иван IV" },
+                { question: "Кто был лидером Кубинской революции?", options: ["Че Гевара", "Фидель Кастро", "Фульхенсио Батиста", "Рауль Кастро"], answer: "Фидель Кастро" },
+                { question: "Какая битва считается переломным моментом в Великой Отечественной войне?", options: ["Битва за Москву", "Курская битва", "Сталинградская битва", "Блокада Ленинграда"], answer: "Сталинградская битва" },
+                { question: "В каком году была подписана Декларация независимости США?", options: ["1776", "1783", "1789", "1774"], answer: "1776" },
+                { question: "Как назывался кодекс чести самураев в Японии?", options: ["Каратэ", "Дзен", "Бусидо", "Харакири"], answer: "Бусидо" },
+                { question: "Кто был последней царицей Египта?", options: ["Нефертити", "Хатшепсут", "Клеопатра", "Арсиноя"], answer: "Клеопатра" },
+                { question: "Какая эпидемия в XIV веке унесла жизни трети населения Европы?", options: ["Оспа", "Холера", "Тиф", "Черная смерть (чума)"], answer: "Черная смерть (чума)" },
+                { question: "Как назывался период в истории США, когда было запрещено производство и продажа алкоголя?", options: ["Великая депрессия", "Сухой закон", "Реконструкция", "Золотая лихорадка"], answer: "Сухой закон" },
+                { question: "Какой город был столицей инков?", options: ["Мачу-Пикчу", "Куско", "Теночтитлан", "Лима"], answer: "Куско" },
+                { question: "Кто был автором '95 тезисов', положивших начало Реформации?", options: ["Жан Кальвин", "Мартин Лютер", "Эразм Роттердамский", "Томас Мор"], answer: "Мартин Лютер" },
+                { question: "Как назывался альянс Германии, Италии и Японии во Второй мировой войне?", options: ["Антанта", "Страны Оси", "Союзники", "Центральные державы"], answer: "Страны Оси" },
+                { question: "Какой мореплаватель совершил первое кругосветное путешествие?", options: ["Христофор Колумб", "Васко да Гама", "Фернан Магеллан", "Джеймс Кук"], answer: "Фернан Магеллан" },
+                { question: "В какой стране зародилась демократия?", options: ["Рим", "Египет", "Греция", "Персия"], answer: "Греция" },
+                { question: "Как назывался план экономической помощи Европе после Второй мировой войны?", options: ["План Дауэса", "План Маршалла", "Доктрина Трумэна", "План Юнга"], answer: "План Маршалла" },
+                { question: "Кто был основателем Монгольской империи?", options: ["Батый", "Тамерлан", "Чингисхан", "Хубилай"], answer: "Чингисхан" },
+                { question: "Какое событие произошло 14 июля 1789 года?", options: ["Взятие Бастилии", "Казнь Людовика XVI", "Принятие Декларации прав человека", "Поход на Версаль"], answer: "Взятие Бастилии" },
+                { question: "Как назывались войны между Римом и Карфагеном?", options: ["Галльские", "Пунические", "Македонские", "Самнитские"], answer: "Пунические" },
+                { question: "Какой президент США издал Прокламацию об освобождении рабов?", options: ["Джордж Вашингтон", "Томас Джефферсон", "Авраам Линкольн", "Эндрю Джексон"], answer: "Авраам Линкольн" },
+                { question: "Как назывался период 'холодной войны'?", options: ["Гонка вооружений", "Противостояние СССР и США", "Космическая гонка", "Железный занавес"], answer: "Противостояние СССР и США" },
+                { question: "Кто был первым русским царем из династии Романовых?", options: ["Алексей Михайлович", "Михаил Федорович", "Петр I", "Федор Алексеевич"], answer: "Михаил Федорович" },
+                { question: "В каком году произошла высадка союзников в Нормандии (День Д)?", options: ["1942", "1943", "1944", "1945"], answer: "1944" },
+                { question: "Как называлась цивилизация, процветавшая на острове Крит?", options: ["Микенская", "Минойская", "Кикладская", "Эллинская"], answer: "Минойская" },
+                { question: "Какой город был разрушен извержением вулкана Везувий в 79 году н.э.?", options: ["Рим", "Афины", "Помпеи", "Карфаген"], answer: "Помпеи" },
+                { question: "Кто был лидером движения за гражданские права в США в 1960-х годах?", options: ["Малкольм Икс", "Мартин Лютер Кинг", "Роза Паркс", "Джесси Джексон"], answer: "Мартин Лютер Кинг" },
+                { question: "Как назывался период в истории Японии, когда страна была изолирована от внешнего мира?", options: ["Эдо", "Мэйдзи", "Хэйан", "Камакура"], answer: "Эдо" },
+                { question: "Какая страна первой предоставила женщинам право голоса?", options: ["США", "Великобритания", "Новая Зеландия", "Финляндия"], answer: "Новая Зеландия" },
+                { question: "Как назывался проект по созданию атомной бомбы в США?", options: ["Проект 'Аполлон'", "Проект 'Гемини'", "Манхэттенский проект", "Проект 'Тринити'"], answer: "Манхэттенский проект" },
+                { question: "Кто был 'Железной леди' британской политики?", options: ["Королева Елизавета II", "Маргарет Тэтчер", "Тереза Мэй", "Индира Ганди"], answer: "Маргарет Тэтчер" },
+                { question: "Какая битва остановила арабское завоевание Европы в 732 году?", options: ["Битва при Гастингсе", "Битва при Пуатье", "Битва при Азенкуре", "Битва при Лепанто"], answer: "Битва при Пуатье" },
+                { question: "Какой император легализовал христианство в Римской империи?", options: ["Нерон", "Август", "Константин Великий", "Диоклетиан"], answer: "Константин Великий" },
+                { question: "Как назывался период культурного расцвета в Гарлеме в 1920-х годах?", options: ["Эпоха джаза", "Гарлемский ренессанс", "Ревущие двадцатые", "Прогрессивная эра"], answer: "Гарлемский ренессанс" },
+                { question: "Кто был первым человеком, ступившим на Луну?", options: ["Юрий Гагарин", "Нил Армстронг", "Базз Олдрин", "Джон Гленн"], answer: "Нил Армстронг" },
+                { question: "Какая страна была разделена на Северную и Южную после Второй мировой войны?", options: ["Германия", "Вьетнам", "Корея", "Все перечисленные"], answer: "Все перечисленные" },
+                { question: "Как называлась система апартеида?", options: ["Расовая сегрегация в ЮАР", "Колониальная система в Индии", "Крепостное право в России", "Кастовая система в Индии"], answer: "Расовая сегрегация в ЮАР" },
+                { question: "Какой город был столицей Ацтекской империи?", options: ["Куско", "Теотиуакан", "Теночтитлан", "Чичен-Ица"], answer: "Теночтитлан" },
+                { question: "Кто был автором 'Государя'?", options: ["Данте Алигьери", "Никколо Макиавелли", "Франческо Петрарка", "Джованни Боккаччо"], answer: "Никколо Макиавелли" },
+                { question: "Какая война произошла между Севером и Югом в США?", options: ["Война за независимость", "Гражданская война", "Англо-американская война", "Мексиканская война"], answer: "Гражданская война" },
+                { question: "Как называлась полиция государственной безопасности в нацистской Германии?", options: ["СС", "Гестапо", "СА", "Вермахт"], answer: "Гестапо" },
+                { question: "Какой город Петр I сделал столицей России?", options: ["Москва", "Киев", "Новгород", "Санкт-Петербург"], answer: "Санкт-Петербург" },
+                { question: "Как назывался период политических репрессий в СССР в 1930-х годах?", options: ["НЭП", "Оттепель", "Большой террор", "Перестройка"], answer: "Большой террор" },
+                { question: "Какой мореплаватель открыл морской путь в Индию вокруг Африки?", options: ["Христофор Колумб", "Васко да Гама", "Фернан Магеллан", "Бартоломеу Диаш"], answer: "Васко да Гама" },
+                { question: "Как назывался законодательный орган в Древнем Риме?", options: ["Агора", "Сенат", "Парламент", "Конгресс"], answer: "Сенат" },
+                { question: "Кто был лидером гугенотов во Франции?", options: ["Кардинал Ришелье", "Генрих IV Наваррский", "Людовик XIV", "Екатерина Медичи"], answer: "Генрих IV Наваррский" },
+                { question: "В каком году произошел распад Советского Союза?", options: ["1989", "1990", "1991", "1993"], answer: "1991" },
+                { question: "Как назывался рыцарский орден, основанный для защиты паломников в Святой земле?", options: ["Тамплиеры", "Госпитальеры", "Тевтонцы", "Все перечисленные"], answer: "Все перечисленные" },
+                { question: "Какой город был центром итальянского Возрождения?", options: ["Рим", "Венеция", "Флоренция", "Милан"], answer: "Флоренция" },
+                { question: "Кто был 'Королем-Солнце' во Франции?", options: ["Людовик XIII", "Людовик XIV", "Людовик XV", "Людовик XVI"], answer: "Людовик XIV" },
+                { question: "Как назывался мирный договор, завершивший Первую мировую войну?", options: ["Версальский договор", "Брестский мир", "Вестфальский мир", "Парижский мир"], answer: "Версальский договор" },
+                { question: "Какой древний народ изобрел алфавит?", options: ["Египтяне", "Шумеры", "Финикийцы", "Греки"], answer: "Финикийцы" },
+                { question: "Кто был автором 'Богатства народов' и отцом современной экономики?", options: ["Карл Маркс", "Джон Мейнард Кейнс", "Адам Смит", "Дэвид Рикардо"], answer: "Адам Смит" },
+                { question: "Какая страна начала промышленную революцию?", options: ["Франция", "Германия", "США", "Великобритания"], answer: "Великобритания" },
+                { question: "Как назывались скандинавские мореходы, совершавшие набеги на Европу?", options: ["Варвары", "Викинги", "Готы", "Вандалы"], answer: "Викинги" },
+                { question: "Кто был первым императором объединенного Китая?", options: ["Конфуций", "Сунь-цзы", "Цинь Шихуанди", "Мао Цзэдун"], answer: "Цинь Шихуанди" },
+                { question: "Какое событие известно как 'Ночь длинных ножей'?", options: ["Варфоломеевская ночь", "Чистка в рядах СА в Германии", "Хрустальная ночь", "Начало Французской революции"], answer: "Чистка в рядах СА в Германии" },
+                { question: "Как назывался период в истории США, последовавший за Гражданской войной?", options: ["Реконструкция", "Прогрессивизм", "Позолоченный век", "Сухой закон"], answer: "Реконструкция" },
+                { question: "Какой город был столицей Халифата Аббасидов и центром 'Золотого века ислама'?", options: ["Дамаск", "Каир", "Багдад", "Кордова"], answer: "Багдад" },
+                { question: "Кто был лидером движения за независимость Индии?", options: ["Джавахарлал Неру", "Махатма Ганди", "Индира Ганди", "Субхас Чандра Бос"], answer: "Махатма Ганди" },
+                { question: "Как назывался военный альянс, созданный в противовес НАТО?", options: ["Организация Варшавского договора", "СЭВ", "Коминтерн", "Ось"], answer: "Организация Варшавского договора" },
+                { question: "Какой английский король подписал 'Великую хартию вольностей'?", options: ["Ричард Львиное Сердце", "Иоанн Безземельный", "Генрих VIII", "Эдуард I"], answer: "Иоанн Безземельный" },
+                // ... еще 215 вопросов
+            ],
+            "Искусство": [
+                // 300 вопросов по Искусству
+                 { question: "Кто написал картину 'Мона Лиза'?", options: ["Винсент Ван Гог", "Пабло Пикассо", "Леонардо да Винчи", "Клод Моне"], answer: "Леонардо да Винчи" },
+                { question: "Какой художник известен своими 'подсолнухами'?", options: ["Винсент Ван Гог", "Поль Гоген", "Камиль Писсарро", "Эдуард Мане"], answer: "Винсент Ван Гог" },
+                { question: "В каком городе находится музей Лувр?", options: ["Лондон", "Рим", "Париж", "Мадрид"], answer: "Париж" },
+                { question: "Кто является автором скульптуры 'Давид'?", options: ["Рафаэль", "Донателло", "Микеланджело", "Бернини"], answer: "Микеланджело" },
+                { question: "Какой стиль живописи характеризуется мелкими точками цвета?", options: ["Кубизм", "Импрессионизм", "Пуантилизм", "Сюрреализм"], answer: "Пуантилизм" },
+                { question: "Кто написал 'Девятую симфонию'?", options: ["Моцарт", "Бах", "Бетховен", "Шопен"], answer: "Бетховен" },
+                { question: "Какое направление в искусстве представляет Сальвадор Дали?", options: ["Сюрреализм", "Кубизм", "Абстракционизм", "Фовизм"], answer: "Сюрреализм" },
+                { question: "Кто автор пьесы 'Ромео и Джульетта'?", options: ["Чарльз Диккенс", "Уильям Шекспир", "Марк Твен", "Оскар Уайльд"], answer: "Уильям Шекспир" },
+                { question: "Как называется японское искусство складывания бумаги?", options: ["Икебана", "Бонсай", "Оригами", "Суми-э"], answer: "Оригами" },
+                { question: "Кто написал картину 'Черный квадрат'?", options: ["Иван Айвазовский", "Илья Репин", "Казимир Малевич", "Василий Кандинский"], answer: "Казимир Малевич" },
+                { question: "Какой музыкальный инструмент имеет 88 клавиш?", options: ["Скрипка", "Гитара", "Фортепиано", "Флейта"], answer: "Фортепиано" },
+                { question: "Кто является архитектором собора Святого Петра в Риме?", options: ["Леонардо да Винчи", "Рафаэль", "Микеланджело", "Брунеллески"], answer: "Микеланджело" },
+                { question: "Какой балет Чайковского самый известный?", options: ["Щелкунчик", "Лебединое озеро", "Спящая красавица", "Весна священная"], answer: "Лебединое озеро" },
+                { question: "Кто написал 'Войну и мир'?", options: ["Федор Достоевский", "Лев Толстой", "Антон Чехов", "Иван Тургенев"], answer: "Лев Толстой" },
+                { question: "Какой голландский художник отрезал себе ухо?", options: ["Рембрандт", "Вермеер", "Ван Гог", "Босх"], answer: "Ван Гог" },
+                { question: "Кто написал 'Гернику'?", options: ["Сальвадор Дали", "Пабло Пикассо", "Хуан Миро", "Франсиско Гойя"], answer: "Пабло Пикассо" },
+                { question: "Какой композитор был глухим?", options: ["Бах", "Моцарт", "Бетховен", "Шуберт"], answer: "Бетховен" },
+                { question: "Как называется архитектурный стиль с остроконечными арками и витражами?", options: ["Романский", "Готический", "Барокко", "Классицизм"], answer: "Готический" },
+                { question: "Кто автор 'Маленького принца'?", options: ["Альбер Камю", "Жан-Поль Сартр", "Антуан де Сент-Экзюпери", "Виктор Гюго"], answer: "Антуан де Сент-Экзюпери" },
+                { question: "Какой художник является представителем поп-арта и известен изображением банок с супом Кэмпбелл?", options: ["Рой Лихтенштейн", "Энди Уорхол", "Джаспер Джонс", "Кит Харинг"], answer: "Энди Уорхол" },
+                { question: "Кто написал оперу 'Кармен'?", options: ["Джузеппе Верди", "Джакомо Пуччини", "Жорж Бизе", "Рихард Вагнер"], answer: "Жорж Бизе" },
+                { question: "Как называется техника живописи водяными красками по сырой штукатурке?", options: ["Мозаика", "Фреска", "Темпера", "Гравюра"], answer: "Фреска" },
+                { question: "Кто является автором 'Дон Кихота'?", options: ["Лопе де Вега", "Мигель де Сервантес", "Франсиско де Кеведо", "Педро Кальдерон"], answer: "Мигель де Сервантес" },
+                { question: "Какой русский писатель написал 'Преступление и наказание'?", options: ["Лев Толстой", "Иван Тургенев", "Федор Достоевский", "Антон Чехов"], answer: "Федор Достоевский" },
+                { question: "Кто из этих художников был импрессионистом?", options: ["Караваджо", "Клод Моне", "Питер Пауль Рубенс", "Эжен Делакруа"], answer: "Клод Моне" },
+                { question: "Как называется знаменитый оперный театр в Милане?", options: ["Ла Скала", "Ковент-Гарден", "Метрополитен-опера", "Венская опера"], answer: "Ла Скала" },
+                { question: "Кто автор картины 'Рождение Венеры'?", options: ["Рафаэль", "Тициан", "Сандро Боттичелли", "Джотто"], answer: "Сандро Боттичелли" },
+                { question: "Какой музыкальный жанр зародился в Новом Орлеане?", options: ["Блюз", "Рок-н-ролл", "Джаз", "Кантри"], answer: "Джаз" },
+                { question: "Кто написал 'Божественную комедию'?", options: ["Петрарка", "Боккаччо", "Данте Алигьери", "Макиавелли"], answer: "Данте Алигьери" },
+                { question: "Какой архитектор спроектировал собор Саграда Фамилия в Барселоне?", options: ["Ле Корбюзье", "Фрэнк Ллойд Райт", "Антонио Гауди", "Вальтер Гропиус"], answer: "Антонио Гауди" },
+                { question: "Кто из 'Битлз' был основным автором песни 'Yesterday'?", options: ["Джон Леннон", "Пол Маккартни", "Джордж Харрисон", "Ринго Старр"], answer: "Пол Маккартни" },
+                { question: "Как называется литературный прием, когда неодушевленным предметам приписываются человеческие качества?", options: ["Метафора", "Сравнение", "Олицетворение", "Гипербола"], answer: "Олицетворение" },
+                { question: "Кто написал музыку к балету 'Щелкунчик'?", options: ["Игорь Стравинский", "Сергей Прокофьев", "Петр Чайковский", "Дмитрий Шостакович"], answer: "Петр Чайковский" },
+                { question: "Какой голландский художник написал 'Ночной дозор'?", options: ["Ян Вермеер", "Рембрандт ван Рейн", "Питер Брейгель Старший", "Иероним Босх"], answer: "Рембрандт ван Рейн" },
+                { question: "Кто является режиссером фильма 'Криминальное чтиво'?", options: ["Стивен Спилберг", "Мартин Скорсезе", "Квентин Тарантино", "Фрэнсис Форд Коппола"], answer: "Квентин Тарантино" },
+                { question: "Как называется древнегреческий храм, посвященный богине Афине?", options: ["Пантеон", "Колизей", "Парфенон", "Эрехтейон"], answer: "Парфенон" },
+                { question: "Кто написал 'Улисса'?", options: ["Вирджиния Вулф", "Джеймс Джойс", "Т. С. Элиот", "Эрнест Хемингуэй"], answer: "Джеймс Джойс" },
+                { question: "Какой инструмент является главным в струнном квартете?", options: ["Виолончель", "Альт", "Первая скрипка", "Контрабас"], answer: "Первая скрипка" },
+                { question: "Кто автор картины 'Постоянство памяти' с плавящимися часами?", options: ["Рене Магритт", "Макс Эрнст", "Сальвадор Дали", "Хуан Миро"], answer: "Сальвадор Дали" },
+                { question: "Какой поэт написал 'Ворона'?", options: ["Уолт Уитмен", "Эмили Дикинсон", "Эдгар Аллан По", "Роберт Фрост"], answer: "Эдгар Аллан По" },
+                { question: "Как называется вид театрального искусства с использованием кукол?", options: ["Пантомима", "Опера", "Балет", "Кукольный театр"], answer: "Кукольный театр" },
+                { question: "Кто написал '1984'?", options: ["Олдос Хаксли", "Джордж Оруэлл", "Рэй Брэдбери", "Айзек Азимов"], answer: "Джордж Оруэлл" },
+                { question: "Какой композитор известен как 'Король вальса'?", options: ["Франц Шуберт", "Иоганн Штраус (сын)", "Фредерик Шопен", "Ференц Лист"], answer: "Иоганн Штраус (сын)" },
+                { question: "Кто автор скульптуры 'Мыслитель'?", options: ["Огюст Роден", "Константин Бранкузи", "Альберто Джакометти", "Жан Арп"], answer: "Огюст Роден" },
+                { question: "Какой фильм первым получил премию 'Оскар' за лучший фильм?", options: ["Унесенные ветром", "Крылья", "Это случилось однажды ночью", "Бродвейская мелодия"], answer: "Крылья" },
+                { question: "Как называется стиль в архитектуре, для которого характерны роскошь, пышность и драматизм?", options: ["Готика", "Ренессанс", "Барокко", "Рококо"], answer: "Барокко" },
+                { question: "Кто написал 'Властелина колец'?", options: ["К. С. Льюис", "Дж. Р. Р. Толкин", "Джордж Мартин", "Урсула Ле Гуин"], answer: "Дж. Р. Р. Толкин" },
+                { question: "Какой мексиканский художник известен своими муралами?", options: ["Диего Ривера", "Фрида Кало", "Руфино Тамайо", "Давид Сикейрос"], answer: "Диего Ривера" },
+                { question: "Кто является автором 'Четырех времен года'?", options: ["Иоганн Себастьян Бах", "Вольфганг Амадей Моцарт", "Антонио Вивальди", "Георг Фридрих Гендель"], answer: "Антонио Вивальди" },
+                { question: "Какой роман начинается со слов 'Все счастливые семьи похожи друг на друга...'?", options: ["Война и мир", "Анна Каренина", "Братья Карамазовы", "Отцы и дети"], answer: "Анна Каренина" },
+                { question: "Кто из этих художников был представителем абстрактного экспрессионизма?", options: ["Эдвард Хоппер", "Джексон Поллок", "Грант Вуд", "Эндрю Уайет"], answer: "Джексон Поллок" },
+                { question: "Как называется традиционный японский театр, где все роли исполняют мужчины?", options: ["Но", "Бунраку", "Кабуки", "Кёгэн"], answer: "Кабуки" },
+                { question: "Кто написал 'Над пропастью во ржи'?", options: ["Фрэнсис Скотт Фицджеральд", "Джером Сэлинджер", "Джон Стейнбек", "Уильям Фолкнер"], answer: "Джером Сэлинджер" },
+                { question: "Какой инструмент не входит в состав стандартного симфонического оркестра?", options: ["Арфа", "Туба", "Саксофон", "Гобой"], answer: "Саксофон" },
+                { question: "Кто автор картины 'Американская готика'?", options: ["Эдвард Хоппер", "Грант Вуд", "Джорджия О'Киф", "Томас Харт Бентон"], answer: "Грант Вуд" },
+                { question: "Как называется жанр фотографии, целью которого является запечатление реальности без прикрас?", options: ["Портретная съемка", "Пейзажная съемка", "Документальная фотография", "Арт-фотография"], answer: "Документальная фотография" },
+                { question: "Кто написал 'Приключения Гекльберри Финна'?", options: ["Герман Мелвилл", "Марк Твен", "Натаниэль Готорн", "Вашингтон Ирвинг"], answer: "Марк Твен" },
+                { question: "Какой город считается родиной хип-хопа?", options: ["Лос-Анджелес", "Чикаго", "Нью-Йорк (Бронкс)", "Детройт"], answer: "Нью-Йорк (Бронкс)" },
+                { question: "Кто автор картины 'Крик'?", options: ["Густав Климт", "Эгон Шиле", "Эдвард Мунк", "Василий Кандинский"], answer: "Эдвард Мунк" },
+                { question: "Как называется стихотворение без рифмы?", options: ["Сонет", "Хокку", "Верлибр (свободный стих)", "Баллада"], answer: "Верлибр (свободный стих)" },
+                { question: "Кто был ведущим гитаристом группы Queen?", options: ["Джимми Пейдж", "Эрик Клэптон", "Брайан Мэй", "Джефф Бек"], answer: "Брайан Мэй" },
+                { question: "Какой архитектурный ордер самый простой и строгий?", options: ["Ионический", "Коринфский", "Дорический", "Тосканский"], answer: "Дорический" },
+                { question: "Кто написал 'Гордость и предубеждение'?", options: ["Сестры Бронте", "Джейн Остин", "Джордж Элиот", "Мэри Шелли"], answer: "Джейн Остин" },
+                { question: "Какой художник был женат на Фриде Кало?", options: ["Пабло Пикассо", "Диего Ривера", "Сальвадор Дали", "Хосе Клементе Ороско"], answer: "Диего Ривера" },
+                { question: "Как называется искусство создания изображений из кусочков цветного стекла или камня?", options: ["Витраж", "Мозаика", "Фреска", "Гравюра"], answer: "Мозаика" },
+                { question: "Кто написал 'Старик и море'?", options: ["Уильям Фолкнер", "Эрнест Хемингуэй", "Джон Стейнбек", "Фрэнсис Скотт Фицджеральд"], answer: "Эрнест Хемингуэй" },
+                { question: "Какой танцевальный стиль зародился в Аргентине?", options: ["Сальса", "Самба", "Танго", "Фламенко"], answer: "Танго" },
+                { question: "Кто автор картины 'Девушка с жемчужной сережкой'?", options: ["Рембрандт", "Ян Вермеер", "Франс Халс", "Питер де Хох"], answer: "Ян Вермеер" },
+                { question: "Как называется первая часть трилогии 'Крестный отец'?", options: ["Крестный отец", "Крестный отец: Часть II", "Крестный отец: Часть III", "Сицилиец"], answer: "Крестный отец" },
+                { question: "Кто написал 'Гамлета'?", options: ["Кристофер Марло", "Уильям Шекспир", "Бен Джонсон", "Джон Донн"], answer: "Уильям Шекспир" },
+                { question: "Какой музыкальный термин означает 'очень громко'?", options: ["Пиано", "Форте", "Фортиссимо", "Крещендо"], answer: "Фортиссимо" },
+                { question: "Кто автор картины 'Звездная ночь'?", options: ["Поль Гоген", "Винсент Ван Гог", "Жорж Сёра", "Поль Сезанн"], answer: "Винсент Ван Гог" },
+                { question: "Как называется форма японской поэзии из трех строк?", options: ["Танка", "Хайку (Хокку)", "Рэнга", "Сима"], answer: "Хайку (Хокку)" },
+                { question: "Кто был солистом группы Nirvana?", options: ["Эдди Веддер", "Крис Корнелл", "Курт Кобейн", "Лейн Стейли"], answer: "Курт Кобейн" },
+                { question: "Какой музей находится в Санкт-Петербурге?", options: ["Третьяковская галерея", "Эрмитаж", "Пушкинский музей", "Русский музей"], answer: "Эрмитаж" },
+                { question: "Кто написал 'Портрет Дориана Грея'?", options: ["Оскар Уайльд", "Чарльз Диккенс", "Брэм Стокер", "Роберт Льюис Стивенсон"], answer: "Оскар Уайльд" },
+                { question: "Какой инструмент не относится к медным духовым?", options: ["Труба", "Тромбон", "Валторна", "Кларнет"], answer: "Кларнет" },
+                { question: "Кто автор картины 'Возвращение блудного сына'?", options: ["Караваджо", "Рембрандт", "Рубенс", "Веласкес"], answer: "Рембрандт" },
+                { question: "Как называется жанр кино, характеризующийся мрачной атмосферой и цинизмом?", options: ["Вестерн", "Нуар", "Мюзикл", "Триллер"], answer: "Нуар" },
+                { question: "Кто написал 'Мастера и Маргариту'?", options: ["Борис Пастернак", "Михаил Булгаков", "Андрей Платонов", "Владимир Набоков"], answer: "Михаил Булгаков" },
+                { question: "Какой композитор написал 'Лунную сонату'?", options: ["Моцарт", "Шопен", "Бетховен", "Лист"], answer: "Бетховен" },
+                { question: "Кто автор картины 'Утро в сосновом лесу'?", options: ["Иван Айвазовский", "Иван Шишкин", "Илья Репин", "Исаак Левитан"], answer: "Иван Шишкин" },
+                { question: "Как называется главный герой романа 'Моби Дик'?", options: ["Измаил", "Ахав", "Старбек", "Квикег"], answer: "Ахав" },
+                { question: "Кто считается 'Королем рок-н-ролла'?", options: ["Чак Берри", "Литл Ричард", "Элвис Пресли", "Джерри Ли Льюис"], answer: "Элвис Пресли" },
+                { question: "Какой архитектурный стиль предшествовал готике?", options: ["Романский", "Барокко", "Ренессанс", "Классицизм"], answer: "Романский" },
+                { question: "Кто написал 'Алису в Стране чудес'?", options: ["Редьярд Киплинг", "Льюис Кэрролл", "Алан Милн", "Дж. М. Барри"], answer: "Льюис Кэрролл" },
+                { question: "Какой художник является одним из основателей кубизма?", options: ["Анри Матисс", "Пабло Пикассо", "Василий Кандинский", "Пит Мондриан"], answer: "Пабло Пикассо" },
+                { question: "Как называется искусство каллиграфии в исламском мире?", options: ["Арабеска", "Хатт", "Гирих", "Мукарнас"], answer: "Хатт" },
+                { question: "Кто написал 'Великого Гэтсби'?", options: ["Эрнест Хемингуэй", "Фрэнсис Скотт Фицджеральд", "Уильям Фолкнер", "Джон Стейнбек"], answer: "Фрэнсис Скотт Фицджеральд" },
+                // ... еще 215 вопросов
+            ],
+            "География": [
+                // 300 вопросов по Географии
+                 { question: "Какая самая длинная река в мире?", options: ["Нил", "Амазонка", "Янцзы", "Миссисипи"], answer: "Амазонка" },
+                { question: "Какая самая высокая гора в мире?", options: ["К2", "Канченджанга", "Эверест", "Лхоцзе"], answer: "Эверест" },
+                { question: "Какая страна имеет наибольшую площадь?", options: ["Канада", "Китай", "США", "Россия"], answer: "Россия" },
+                { question: "Какой самый большой океан?", options: ["Атлантический", "Индийский", "Тихий", "Северный Ледовитый"], answer: "Тихий" },
+                { question: "В какой стране находится Великая Китайская стена?", options: ["Япония", "Индия", "Китай", "Монголия"], answer: "Китай" },
+                { question: "Какая пустыня самая большая в мире?", options: ["Гоби", "Калахари", "Сахара", "Антарктическая"], answer: "Антарктическая" },
+                { question: "Какая столица Австралии?", options: ["Сидней", "Мельбурн", "Канберра", "Перт"], answer: "Канберра" },
+                { question: "На каком континенте находится Египет?", options: ["Азия", "Африка", "Европа", "Южная Америка"], answer: "Африка" },
+                { question: "Какой пролив разделяет Азию и Северную Америку?", options: ["Гибралтарский", "Магелланов", "Берингов", "Дрейка"], answer: "Берингов" },
+                { question: "Какое самое глубокое озеро в мире?", options: ["Танганьика", "Верхнее", "Байкал", "Каспийское море"], answer: "Байкал" },
+                { question: "В какой стране находится город Мачу-Пикчу?", options: ["Бразилия", "Перу", "Мексика", "Чили"], answer: "Перу" },
+                { question: "Сколько континентов на Земле?", options: ["5", "6", "7", "8"], answer: "7" },
+                { question: "Какой водопад является самым высоким в мире?", options: ["Ниагарский", "Виктория", "Игуасу", "Анхель"], answer: "Анхель" },
+                { question: "Какая страна известна как 'Страна восходящего солнца'?", options: ["Китай", "Южная Корея", "Япония", "Таиланд"], answer: "Япония" },
+                { question: "Какой город является столицей Канады?", options: ["Торонто", "Ванкувер", "Монреаль", "Оттава"], answer: "Оттава" },
+                { question: "Какой самый большой остров в мире?", options: ["Новая Гвинея", "Борнео", "Мадагаскар", "Гренландия"], answer: "Гренландия" },
+                { question: "Какая страна не имеет выхода к морю?", options: ["Испания", "Швейцария", "Италия", "Греция"], answer: "Швейцария" },
+                { question: "Через какую из этих стран не протекает река Дунай?", options: ["Германия", "Австрия", "Венгрия", "Польша"], answer: "Польша" },
+                { question: "Как называется самая длинная горная цепь на суше?", options: ["Гималаи", "Анды", "Кордильеры", "Альпы"], answer: "Анды" },
+                { question: "Какой канал соединяет Средиземное море с Красным морем?", options: ["Панамский канал", "Суэцкий канал", "Кильский канал", "Коринфский канал"], answer: "Суэцкий канал" },
+                { question: "В какой стране находится гора Килиманджаро?", options: ["Кения", "Эфиопия", "Танзания", "Уганда"], answer: "Танзания" },
+                { question: "Какой город является столицей Бразилии?", options: ["Рио-де-Жанейро", "Сан-Паулу", "Бразилиа", "Салвадор"], answer: "Бразилиа" },
+                { question: "Как называется линия, разделяющая Землю на Северное и Южное полушария?", options: ["Тропик Рака", "Экватор", "Полярный круг", "Гринвичский меридиан"], answer: "Экватор" },
+                { question: "Какая страна имеет форму сапога?", options: ["Греция", "Италия", "Испания", "Португалия"], answer: "Италия" },
+                { question: "Какой самый большой коралловый риф в мире?", options: ["Риф Апо", "Белизский барьерный риф", "Большой Барьерный риф", "Рифы Красного моря"], answer: "Большой Барьерный риф" },
+                { question: "На каком континенте нет действующих вулканов?", options: ["Африка", "Австралия", "Европа", "Южная Америка"], answer: "Австралия" },
+                { question: "Какой город стоит на двух континентах?", options: ["Каир", "Москва", "Стамбул", "Панама"], answer: "Стамбул" },
+                { question: "Как называется самая северная точка Евразии?", options: ["Мыс Нордкап", "Мыс Челюскин", "Мыс Дежнёва", "Мыс Рока"], answer: "Мыс Челюскин" },
+                { question: "Какое море омывает берега Японии, России и Кореи?", options: ["Желтое море", "Восточно-Китайское море", "Японское море", "Охотское море"], answer: "Японское море" },
+                { question: "В какой стране находится пустыня Атакама, самое сухое место на Земле?", options: ["Аргентина", "Перу", "Чили", "Боливия"], answer: "Чили" },
+                { question: "Какая река протекает через Париж?", options: ["Рона", "Луара", "Сена", "Гаронна"], answer: "Сена" },
+                { question: "Как называется самый большой архипелаг в мире?", options: ["Филиппины", "Япония", "Индонезия", "Мальдивы"], answer: "Индонезия" },
+                { question: "Какая страна граничит с 14 странами?", options: ["Россия", "Бразилия", "Германия", "Китай"], answer: "Китай" },
+                { question: "Какой пролив отделяет Великобританию от Франции?", options: ["Гибралтарский", "Ла-Манш", "Датский", "Босфор"], answer: "Ла-Манш" },
+                { question: "Как называется самая низкая точка на суше?", options: ["Долина Смерти", "Впадина Каттара", "Берег Мертвого моря", "Турфанская впадина"], answer: "Берег Мертвого моря" },
+                { question: "Какой город является столицей Таиланда?", options: ["Ханой", "Пномпень", "Бангкок", "Куала-Лумпур"], answer: "Бангкок" },
+                { question: "На каком острове находится государство Куба?", options: ["Гаити", "Ямайка", "Куба", "Пуэрто-Рико"], answer: "Куба" },
+                { question: "Какая река является самой длинной в Европе?", options: ["Дунай", "Днепр", "Волга", "Рейн"], answer: "Волга" },
+                { question: "Какой город является столицей Аргентины?", options: ["Сантьяго", "Лима", "Богота", "Буэнос-Айрес"], answer: "Буэнос-Айрес" },
+                { question: "Как называется воображаемая линия, проходящая через полюса Земли?", options: ["Орбита", "Ось вращения", "Эклиптика", "Меридиан"], answer: "Ось вращения" },
+                { question: "Какой самый густонаселенный город в мире?", options: ["Шанхай", "Дели", "Токио", "Мехико"], answer: "Токио" },
+                { question: "Какая страна является родиной кенгуру?", options: ["Новая Зеландия", "Австралия", "ЮАР", "Индонезия"], answer: "Австралия" },
+                { question: "Какой канал соединяет Атлантический и Тихий океаны?", options: ["Суэцкий канал", "Панамский канал", "Беломорканал", "Эри-канал"], answer: "Панамский канал" },
+                { question: "В какой горной системе находится гора Монблан?", options: ["Пиренеи", "Карпаты", "Альпы", "Апеннины"], answer: "Альпы" },
+                { question: "Какая страна известна своими фьордами?", options: ["Швеция", "Финляндия", "Норвегия", "Дания"], answer: "Норвегия" },
+                { question: "Какой город является столицей Южной Кореи?", options: ["Пхеньян", "Пусан", "Сеул", "Инчхон"], answer: "Сеул" },
+                { question: "Как называется крупнейший тропический лес в мире?", options: ["Леса Конго", "Леса Амазонии", "Леса Борнео", "Леса Новой Гвинеи"], answer: "Леса Амазонии" },
+                { question: "Какое из Великих озер является самым большим по площади?", options: ["Мичиган", "Гурон", "Эри", "Верхнее"], answer: "Верхнее" },
+                { question: "Какой город является столицей Египта?", options: ["Александрия", "Луксор", "Каир", "Гиза"], answer: "Каир" },
+                { question: "В какой стране находится Тадж-Махал?", options: ["Пакистан", "Индия", "Бангладеш", "Непал"], answer: "Индия" },
+                { question: "Какая река протекает через Лондон?", options: ["Северн", "Темза", "Эйвон", "Трент"], answer: "Темза" },
+                { question: "Как называется полуостров, на котором расположены Испания и Португалия?", options: ["Апеннинский", "Балканский", "Пиренейский", "Скандинавский"], answer: "Пиренейский" },
+                { question: "Какой город является столицей Новой Зеландии?", options: ["Окленд", "Крайстчерч", "Веллингтон", "Квинстаун"], answer: "Веллингтон" },
+                { question: "Какая пустыня расположена на территории Монголии и Китая?", options: ["Каракумы", "Такла-Макан", "Гоби", "Кызылкум"], answer: "Гоби" },
+                { question: "Какой самый большой по площади штат США?", options: ["Техас", "Калифорния", "Аляска", "Монтана"], answer: "Аляска" },
+                { question: "Какой город является столицей Ирландии?", options: ["Белфаст", "Корк", "Дублин", "Голуэй"], answer: "Дублин" },
+                { question: "Как называется самая южная точка Африки?", options: ["Мыс Доброй Надежды", "Мыс Игольный", "Мыс Гвардафуй", "Мыс Кабу-Бранку"], answer: "Мыс Игольный" },
+                { question: "Какая страна является самой маленькой в мире?", options: ["Монако", "Науру", "Ватикан", "Сан-Марино"], answer: "Ватикан" },
+                { question: "Какой город является столицей Турции?", options: ["Стамбул", "Анкара", "Измир", "Анталья"], answer: "Анкара" },
+                { question: "Как называется море, расположенное между Европой и Африкой?", options: ["Черное море", "Красное море", "Средиземное море", "Карибское море"], answer: "Средиземное море" },
+                { question: "В какой стране находится водопад Виктория?", options: ["Зимбабве и Замбия", "ЮАР", "Ангола", "Намибия"], answer: "Зимбабве и Замбия" },
+                { question: "Какой город является столицей Вьетнама?", options: ["Хошимин", "Дананг", "Ханой", "Хюэ"], answer: "Ханой" },
+                { question: "Как называется крупнейший остров в Средиземном море?", options: ["Сардиния", "Кипр", "Сицилия", "Крит"], answer: "Сицилия" },
+                { question: "Какая страна является крупнейшим производителем кофе в мире?", options: ["Колумбия", "Вьетнам", "Бразилия", "Эфиопия"], answer: "Бразилия" },
+                { question: "Какой город является столицей Австрии?", options: ["Зальцбург", "Инсбрук", "Вена", "Грац"], answer: "Вена" },
+                { question: "Как называется самая длинная река в Северной Америке?", options: ["Миссисипи", "Миссури", "Юкон", "Маккензи"], answer: "Миссури" },
+                { question: "Какая страна расположена на полуострове Ютландия?", options: ["Швеция", "Норвегия", "Финляндия", "Дания"], answer: "Дания" },
+                { question: "Какой город является столицей Нидерландов?", options: ["Роттердам", "Гаага", "Амстердам", "Утрехт"], answer: "Амстердам" },
+                { question: "Как называется крупнейшая впадина на Земле?", options: ["Марианская впадина", "Желоб Тонга", "Филиппинский желоб", "Желоб Кермадек"], answer: "Марианская впадина" },
+                { question: "В какой стране находится остров Бали?", options: ["Таиланд", "Малайзия", "Индонезия", "Филиппины"], answer: "Индонезия" },
+                { question: "Какой город является столицей Шотландии?", options: ["Глазго", "Абердин", "Эдинбург", "Данди"], answer: "Эдинбург" },
+                { question: "Как называется горная цепь, разделяющая Европу и Азию?", options: ["Альпы", "Кавказские горы", "Уральские горы", "Карпаты"], answer: "Уральские горы" },
+                { question: "Какая страна является самой густонаселенной в мире?", options: ["Индия", "Китай", "Монако", "Сингапур"], answer: "Монако" },
+                { question: "Какой город является столицей Перу?", options: ["Куско", "Арекипа", "Лима", "Трухильо"], answer: "Лима" },
+                { question: "Как называется явление, когда холодный воздух вытесняет теплый?", options: ["Циклон", "Антициклон", "Холодный фронт", "Теплый фронт"], answer: "Холодный фронт" },
+                { question: "Какая страна занимает весь континент?", options: ["Канада", "Россия", "Китай", "Австралия"], answer: "Австралия" },
+                { question: "Какой город является столицей Марокко?", options: ["Касабланка", "Марракеш", "Рабат", "Фес"], answer: "Рабат" },
+                { question: "Как называется крупнейшее по площади пресноводное озеро в мире?", options: ["Байкал", "Верхнее", "Виктория", "Гурон"], answer: "Верхнее" },
+                { question: "В какой стране находится Стоунхендж?", options: ["Ирландия", "Шотландия", "Уэльс", "Англия"], answer: "Англия" },
+                { question: "Какой город является столицей Финляндии?", options: ["Турку", "Тампере", "Хельсинки", "Эспоо"], answer: "Хельсинки" },
+                { question: "Как называется самая большая пустыня в Азии?", options: ["Гоби", "Аравийская пустыня", "Тар", "Каракумы"], answer: "Аравийская пустыня" },
+                { question: "Какая страна является родиной тюльпанов?", options: ["Нидерланды", "Турция", "Иран", "Афганистан"], answer: "Турция" },
+                { question: "Какой город является столицей Португалии?", options: ["Порту", "Лиссабон", "Синтра", "Коимбра"], answer: "Лиссабон" },
+                // ... еще 215 вопросов
+            ],
+            "Общие знания": [
+                // 300 вопросов по Общим знаниям
+                { question: "Сколько дней в високосном году?", options: ["365", "366", "364", "367"], answer: "366" },
+                { question: "Какой цвет получается при смешивании синего и желтого?", options: ["Красный", "Фиолетовый", "Зеленый", "Оранжевый"], answer: "Зеленый" },
+                { question: "Как называется детеныш овцы?", options: ["Теленок", "Жеребенок", "Ягненок", "Козленок"], answer: "Ягненок" },
+                { question: "Какой вид спорта использует самый маленький мяч?", options: ["Гольф", "Настольный теннис", "Сквош", "Бейсбол"], answer: "Настольный теннис" },
+                { question: "Сколько игроков в футбольной команде на поле?", options: ["9", "10", "11", "12"], answer: "11" },
+                { question: "Какая валюта используется в Японии?", options: ["Юань", "Вона", "Йена", "Бат"], answer: "Йена" },
+                { question: "Что измеряет термометр?", options: ["Давление", "Влажность", "Температуру", "Скорость ветра"], answer: "Температуру" },
+                { question: "Кто написал 'Гарри Поттера'?", options: ["Дж. Р. Р. Толкин", "К. С. Льюис", "Дж. К. Роулинг", "Джордж Мартин"], answer: "Дж. К. Роулинг" },
+                { question: "В какой игре используется термин 'шах и мат'?", options: ["Шашки", "Го", "Шахматы", "Нарды"], answer: "Шахматы" },
+                { question: "Какая компания производит iPhone?", options: ["Samsung", "Google", "Apple", "Huawei"], answer: "Apple" },
+                { question: "Сколько сторон у гексагона?", options: ["5", "6", "7", "8"], answer: "6" },
+                { question: "Какой самый твердый природный материал?", options: ["Золото", "Железо", "Кварц", "Алмаз"], answer: "Алмаз" },
+                { question: "Как называется столица Италии?", options: ["Милан", "Венеция", "Рим", "Неаполь"], answer: "Рим" },
+                { question: "Какой океан самый соленый?", options: ["Тихий", "Атлантический", "Индийский", "Северный Ледовитый"], answer: "Атлантический" },
+                { question: "Какое животное является символом Всемирного фонда дикой природы (WWF)?", options: ["Тигр", "Орел", "Панда", "Слон"], answer: "Панда" },
+                { question: "Сколько карт в стандартной колоде (без джокеров)?", options: ["52", "54", "36", "48"], answer: "52" },
+                { question: "Как называется страх перед пауками?", options: ["Клаустрофобия", "Акрофобия", "Арахнофобия", "Агорафобия"], answer: "Арахнофобия" },
+                { question: "Какая планета в Солнечной системе самая большая?", options: ["Сатурн", "Юпитер", "Нептун", "Уран"], answer: "Юпитер" },
+                { question: "Какой язык имеет больше всего носителей в мире?", options: ["Английский", "Испанский", "Китайский (мандарин)", "Хинди"], answer: "Китайский (мандарин)" },
+                { question: "Что означает аббревиатура 'www' в адресе сайта?", options: ["World Wide Web", "World Web Wide", "Web World Wide", "Wide World Web"], answer: "World Wide Web" },
+                { question: "Сколько очков дается за тачдаун в американском футболе?", options: ["3", "5", "6", "7"], answer: "6" },
+                { question: "Какой цвет имеет 'черный ящик' самолета?", options: ["Черный", "Серый", "Оранжевый", "Желтый"], answer: "Оранжевый" },
+                { question: "Как называется врач, который лечит животных?", options: ["Терапевт", "Зоолог", "Ветеринар", "Кинолог"], answer: "Ветеринар" },
+                { question: "Какой ингредиент является основным в гуакамоле?", options: ["Томат", "Авокадо", "Перец", "Лук"], answer: "Авокадо" },
+                { question: "Сколько колец на олимпийском флаге?", options: ["4", "5", "6", "7"], answer: "5" },
+                { question: "Как называется столица Испании?", options: ["Барселона", "Севилья", "Мадрид", "Валенсия"], answer: "Мадрид" },
+                { question: "Какой инструмент используется для просмотра звезд?", options: ["Микроскоп", "Телескоп", "Бинокль", "Перископ"], answer: "Телескоп" },
+                { question: "Какая компания использует слоган 'Just Do It'?", options: ["Adidas", "Puma", "Reebok", "Nike"], answer: "Nike" },
+                { question: "Сколько граней у кубика Рубика?", options: ["4", "6", "8", "12"], answer: "6" },
+                { question: "Как называется национальный вид спорта Канады (летний)?", options: ["Хоккей", "Лакросс", "Бейсбол", "Керлинг"], answer: "Лакросс" },
+                { question: "Что означает 'C' в формуле E=mc²?", options: ["Масса", "Энергия", "Скорость света", "Константа"], answer: "Скорость света" },
+                { question: "Какой фрукт изображен на логотипе компании Apple?", options: ["Груша", "Яблоко", "Апельсин", "Вишня"], answer: "Яблоко" },
+                { question: "Как называется самая высокая шахматная фигура?", options: ["Ферзь", "Король", "Ладья", "Слон"], answer: "Король" },
+                { question: "Какой город известен как 'Вечный город'?", options: ["Афины", "Иерусалим", "Рим", "Константинополь"], answer: "Рим" },
+                { question: "Сколько часовых поясов в России?", options: ["9", "10", "11", "12"], answer: "11" },
+                { question: "Какой металл является основным компонентом стали?", options: ["Алюминий", "Медь", "Железо", "Цинк"], answer: "Железо" },
+                { question: "Как называется процесс, при котором компания выводит свои акции на биржу?", options: ["IPO", "M&A", "LBO", "SEO"], answer: "IPO" },
+                { question: "Какой цвет находится в центре радуги?", options: ["Красный", "Синий", "Зеленый", "Желтый"], answer: "Зеленый" },
+                { question: "Как называется самая длинная кость в теле человека?", options: ["Плечевая", "Лучевая", "Большеберцовая", "Бедренная"], answer: "Бедренная" },
+                { question: "Какой континент является самым жарким?", options: ["Южная Америка", "Африка", "Австралия", "Азия"], answer: "Африка" },
+                { question: "Сколько сердец у осьминога?", options: ["Одно", "Два", "Три", "Четыре"], answer: "Три" },
+                { question: "Как называется валюта Великобритании?", options: ["Евро", "Франк", "Фунт стерлингов", "Марка"], answer: "Фунт стерлингов" },
+                { question: "Какой персонаж живет по адресу Бейкер-стрит, 221Б?", options: ["Эркюль Пуаро", "Джеймс Бонд", "Шерлок Холмс", "Доктор Ватсон"], answer: "Шерлок Холмс" },
+                { question: "Что измеряет карат при оценке драгоценных камней, таких как алмазы?", options: ["Чистота", "Масса", "Цвет", "Огранка"], answer: "Масса" },
+                { question: "Какой вид спорта также известен как пинг-понг?", options: ["Бадминтон", "Теннис", "Настольный теннис", "Сквош"], answer: "Настольный теннис" },
+                { question: "Как называется столица Греции?", options: ["Салоники", "Патры", "Афины", "Ираклион"], answer: "Афины" },
+                { question: "Какое животное не умеет прыгать?", options: ["Слон", "Носорог", "Бегемот", "Все перечисленные"], answer: "Слон" },
+                { question: "Какой цвет у изумруда?", options: ["Красный", "Синий", "Зеленый", "Желтый"], answer: "Зеленый" },
+                { question: "Как называется японское блюдо из сырой рыбы?", options: ["Суши", "Роллы", "Сашими", "Темпура"], answer: "Сашими" },
+                { question: "Сколько штатов в США?", options: ["48", "49", "50", "51"], answer: "50" },
+                { question: "Какой орган человека потребляет больше всего кислорода?", options: ["Сердце", "Печень", "Мозг", "Мышцы"], answer: "Мозг" },
+                { question: "Как называется традиционная шотландская юбка?", options: ["Саронг", "Кильт", "Парео", "Пончо"], answer: "Кильт" },
+                { question: "Какой газ заставляет газированные напитки шипеть?", options: ["Кислород", "Азот", "Углекислый газ", "Водород"], answer: "Углекислый газ" },
+                { question: "Как называется самая известная картина Леонардо да Винчи?", options: ["Тайная вечеря", "Мона Лиза", "Витрувианский человек", "Дама с горностаем"], answer: "Мона Лиза" },
+                { question: "Сколько игроков в баскетбольной команде на площадке?", options: ["5", "6", "7", "8"], answer: "5" },
+                { question: "Как называется столица Египта?", options: ["Александрия", "Каир", "Луксор", "Шарм-эш-Шейх"], answer: "Каир" },
+                { question: "Какой месяц назван в честь римского бога войны?", options: ["Январь", "Март", "Май", "Июнь"], answer: "Март" },
+                { question: "Как называется наука о вине?", options: ["Энология", "Винология", "Ампелография", "Сомельерия"], answer: "Энология" },
+                { question: "Какой самый распространенный химический элемент в земной коре?", options: ["Железо", "Кремний", "Алюминий", "Кислород"], answer: "Кислород" },
+                { question: "Как называется официальная резиденция президента США?", options: ["Пентагон", "Капитолий", "Белый дом", "Кэмп-Дэвид"], answer: "Белый дом" },
+                { question: "В каком городе находится Пизанская башня?", options: ["Рим", "Флоренция", "Пиза", "Венеция"], answer: "Пиза" },
+                { question: "Как называется детеныш кенгуру?", options: ["Кенгуренок", "Джоуи", "Теленок", "Щенок"], answer: "Джоуи" },
+                { question: "Какой язык является официальным в Бразилии?", options: ["Испанский", "Португальский", "Бразильский", "Английский"], answer: "Португальский" },
+                { question: "Сколько лет в одном веке?", options: ["10", "50", "100", "1000"], answer: "100" },
+                { question: "Как называется валюта Китая?", options: ["Йена", "Вона", "Юань", "Рупия"], answer: "Юань" },
+                { question: "Какое животное изображено на логотипе Porsche?", options: ["Бык", "Лев", "Лошадь", "Тигр"], answer: "Лошадь" },
+                { question: "Какой город называют 'Большим яблоком'?", options: ["Лос-Анджелес", "Чикаго", "Нью-Йорк", "Бостон"], answer: "Нью-Йорк" },
+                { question: "Сколько зубов у взрослого человека?", options: ["28", "30", "32", "34"], answer: "32" },
+                { question: "Как называется самая маленькая птица в мире?", options: ["Воробей", "Синица", "Колибри", "Крапивник"], answer: "Колибри" },
+                { question: "Какой цвет у шафрана?", options: ["Красный", "Желтый", "Зеленый", "Фиолетовый"], answer: "Желтый" },
+                { question: "Как называется столица Австралии?", options: ["Сидней", "Мельбурн", "Канберра", "Перт"], answer: "Канберра" },
+                { question: "Какой музыкальный инструмент имеет струны, клавиши и молоточки?", options: ["Клавесин", "Орган", "Фортепиано", "Арфа"], answer: "Фортепиано" },
+                { question: "Как называется боязнь высоты?", options: ["Агорафобия", "Клаустрофобия", "Акрофобия", "Некрофобия"], answer: "Акрофобия" },
+                { question: "Какой первый знак зодиака?", options: ["Телец", "Овен", "Близнецы", "Рак"], answer: "Овен" },
+                { question: "Как называется национальный цветок Японии?", options: ["Лотос", "Роза", "Хризантема", "Сакура (вишня)"], answer: "Сакура (вишня)" },
+                { question: "Сколько полос на флаге США?", options: ["12", "13", "14", "15"], answer: "13" },
+                { question: "Как называется столица Канады?", options: ["Торонто", "Монреаль", "Ванкувер", "Оттава"], answer: "Оттава" },
+                { question: "Какой овощ является основным ингредиентом борща?", options: ["Картофель", "Капуста", "Свекла", "Морковь"], answer: "Свекла" },
+                { question: "Как называется самая быстрая наземная змея?", options: ["Кобра", "Гадюка", "Черная мамба", "Тайпан"], answer: "Черная мамба" },
+                { question: "Какой континент является самым сухим?", options: ["Африка", "Австралия", "Антарктида", "Южная Америка"], answer: "Антарктида" },
+                { question: "Как называется единица измерения мощности?", options: ["Джоуль", "Ватт", "Вольт", "Ньютон"], answer: "Ватт" },
+                { question: "Какой город был столицей Японии до Токио?", options: ["Осака", "Нара", "Киото", "Камакура"], answer: "Киото" },
+                { question: "Как называется самая крупная порода кошек?", options: ["Сиамская", "Британская", "Мейн-кун", "Сфинкс"], answer: "Мейн-кун" },
+                // ... еще 215 вопросов
+            ]
+        };
 
-        // --- Stage and Block classes remain the same ---
-        class Stage {
-            constructor() {
-                this.container = document.getElementById('game');
-                this.renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-                this.renderer.setSize(window.innerWidth, window.innerHeight);
-                this.renderer.setClearColor(0x000000, 0);
-                this.container.appendChild(this.renderer.domElement);
-                
-                this.scene = new THREE.Scene();
-                
-                const aspect = window.innerWidth / window.innerHeight;
-                const d = 20;
-                this.camera = new THREE.OrthographicCamera(-d * aspect, d * aspect, d, -d, -100, 1000);
-                this.camera.position.set(2, 2, 2);
-                this.camera.lookAt(new THREE.Vector3(0, 0, 0));
-                
-                this.light = new THREE.DirectionalLight(0xffffff, 0.5);
-                this.light.position.set(0, 499, 0);
-                this.scene.add(this.light);
-                
-                this.softLight = new THREE.AmbientLight(0xffffff, 0.4);
-                this.scene.add(this.softLight);
+        // --- ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ И СОСТОЯНИЕ ИГРЫ ---
+        const appState = {
+            currentScreen: 'main-menu',
+            currentCategory: '',
+            currentQuestionIndex: 0,
+            score: 0,
+            correctAnswers: 0,
+            incorrectAnswers: 0,
+            shuffledQuestions: [],
+            timer: null,
+            timeLeft: 0,
+            isPaused: false,
+            totalQuestionsPerGame: 15,
+            timePerQuestion: 20
+        };
 
-                window.addEventListener('resize', () => this.onResize());
-                this.onResize();
+        let stats = {};
+
+        // --- ЭЛЕМЕНТЫ DOM ---
+        const screens = {
+            'main-menu': document.getElementById('main-menu'),
+            'category-selection': document.getElementById('category-selection'),
+            'game-screen': document.getElementById('game-screen'),
+            'stats-screen': document.getElementById('stats-screen'),
+            'game-over-screen': document.getElementById('game-over-screen'),
+            'rules-screen': document.getElementById('rules-screen'),
+            'themes-screen': document.getElementById('themes-screen')
+        };
+        const questionTextEl = document.getElementById('question-text');
+        const optionsContainerEl = document.getElementById('options-container');
+        const scoreEl = document.getElementById('score');
+        const questionCounterEl = document.getElementById('question-counter');
+        const timerBarEl = document.getElementById('timer-bar');
+        const pauseOverlayEl = document.getElementById('pause-overlay');
+
+        // --- ОСНОВНЫЕ ФУНКЦИИ ---
+
+        function showScreen(screenId) {
+            if (appState.isPaused) togglePause();
+            if (appState.currentScreen === 'game-screen' && screenId !== 'game-screen') {
+                clearInterval(appState.timer);
             }
 
-            setCamera(y, speed = 0.3) {
-                TweenLite.to(this.camera.position, speed, { y: y + 4, ease: Power1.easeInOut });
-                TweenLite.to(this.camera.lookAt, speed, { y: y, ease: Power1.easeInOut });
-            }
+            Object.values(screens).forEach(screen => screen.classList.add('hidden'));
+            screens[screenId].classList.remove('hidden');
+            appState.currentScreen = screenId;
 
-            onResize() {
-                const viewSize = 30;
-                this.renderer.setSize(window.innerWidth, window.innerHeight);
-                this.camera.left = window.innerWidth / -viewSize;
-                this.camera.right = window.innerWidth / viewSize;
-                this.camera.top = window.innerHeight / viewSize;
-                this.camera.bottom = window.innerHeight / -viewSize;
-                this.camera.updateProjectionMatrix();
-            }
-
-            render = () => this.renderer.render(this.scene, this.camera);
-            add = (elem) => this.scene.add(elem);
-            remove = (elem) => this.scene.remove(elem);
+            if (screenId === 'stats-screen') displayStats();
+            if (screenId === 'main-menu' || screenId === 'category-selection') resetGameState();
+        }
+        
+        function setTheme(themeName) {
+            document.documentElement.setAttribute('data-theme', themeName);
+            localStorage.setItem('theme', themeName);
         }
 
-        class Block {
-            constructor(block, newDimensions = null) {
-                this.STATES = { ACTIVE: 'active', STOPPED: 'stopped', MISSED: 'missed' };
-                this.MOVE_AMOUNT = 12;
-
-                this.targetBlock = block;
-                this.index = (this.targetBlock ? this.targetBlock.index : 0) + 1;
-                this.workingPlane = this.index % 2 ? 'x' : 'z';
-                this.workingDimension = this.index % 2 ? 'width' : 'depth';
-
-                this.dimension = {
-                    width: (newDimensions && newDimensions.width) || (this.targetBlock ? this.targetBlock.dimension.width : 10),
-                    height: 2,
-                    depth: (newDimensions && newDimensions.depth) || (this.targetBlock ? this.targetBlock.dimension.depth : 10),
-                };
-                
-                this.originalDimension = { ...this.dimension };
-
-                this.position = {
-                    x: this.targetBlock ? this.targetBlock.position.x : 0,
-                    y: this.dimension.height * this.index,
-                    z: this.targetBlock ? this.targetBlock.position.z : 0,
-                };
-                
-                this.colorOffset = this.targetBlock ? this.targetBlock.colorOffset : Math.round(Math.random() * 100);
-
-                if (!this.targetBlock) {
-                    this.color = new THREE.Color(0x333344);
-                } else {
-                    const offset = this.index + this.colorOffset;
-                    const r = Math.sin(0.3 * offset) * 55 + 200;
-                    const g = Math.sin(0.3 * offset + 2) * 55 + 200;
-                    const b = Math.sin(0.3 * offset + 4) * 55 + 200;
-                    this.color = new THREE.Color(r / 255, g / 255, b / 255);
-                }
-
-                this.state = this.index > 1 ? this.STATES.ACTIVE : this.STATES.STOPPED;
-                this.speed = -0.1 - (this.index * 0.005);
-                if (this.speed < -4) this.speed = -4;
-                this.direction = this.speed;
-
-                const geometry = new THREE.BoxGeometry(this.dimension.width, this.dimension.height, this.dimension.depth);
-                geometry.applyMatrix(new THREE.Matrix4().makeTranslation(this.dimension.width / 2, this.dimension.height / 2, this.dimension.depth / 2));
-                this.material = new THREE.MeshToonMaterial({ color: this.color.getHex(), shading: THREE.FlatShading });
-                this.mesh = new THREE.Mesh(geometry, this.material);
-                this.mesh.position.set(this.position.x, this.position.y, this.position.z);
-
-                if (this.state === this.STATES.ACTIVE) {
-                    this.position[this.workingPlane] = Math.random() > 0.5 ? -this.MOVE_AMOUNT : this.MOVE_AMOUNT;
-                }
-            }
-
-            reverseDirection = () => {
-                this.direction = this.direction > 0 ? this.speed : Math.abs(this.speed);
-            }
-
-            place() {
-                this.state = this.STATES.STOPPED;
-
-                let overlap = this.targetBlock.dimension[this.workingDimension] - Math.abs(this.position[this.workingPlane] - this.targetBlock.position[this.workingPlane]);
-
-                const blocksToReturn = {
-                    plane: this.workingPlane,
-                    direction: this.direction,
-                    bonus: false
-                };
-                
-                if (this.dimension[this.workingDimension] - overlap < 0.3) {
-                    blocksToReturn.bonus = true;
-                    this.dimension.width = this.targetBlock.dimension.width;
-                    this.dimension.depth = this.targetBlock.dimension.depth;
-                    overlap = this.targetBlock.dimension[this.workingDimension];
-                    this.position.x = this.targetBlock.position.x;
-                    this.position.z = this.targetBlock.position.z;
-                }
-
-                if (overlap > 0) {
-                    const choppedDimensions = { ...this.dimension };
-                    choppedDimensions[this.workingDimension] -= overlap;
-                    this.dimension[this.workingDimension] = overlap;
-
-                    const placedGeometry = new THREE.BoxGeometry(this.dimension.width, this.dimension.height, this.dimension.depth);
-                    placedGeometry.applyMatrix(new THREE.Matrix4().makeTranslation(this.dimension.width / 2, this.dimension.height / 2, this.dimension.depth / 2));
-                    const placedMesh = new THREE.Mesh(placedGeometry, this.material);
-
-                    const choppedGeometry = new THREE.BoxGeometry(choppedDimensions.width, choppedDimensions.height, choppedDimensions.depth);
-                    choppedGeometry.applyMatrix(new THREE.Matrix4().makeTranslation(choppedDimensions.width / 2, choppedDimensions.height / 2, choppedDimensions.depth / 2));
-                    const choppedMesh = new THREE.Mesh(choppedGeometry, this.material);
-
-                    const choppedPosition = { x: this.position.x, y: this.position.y, z: this.position.z };
-
-                    if (this.position[this.workingPlane] < this.targetBlock.position[this.workingPlane]) {
-                        this.position[this.workingPlane] = this.targetBlock.position[this.workingPlane];
-                    } else {
-                        choppedPosition[this.workingPlane] += overlap;
-                    }
-
-                    placedMesh.position.set(this.position.x, this.position.y, this.position.z);
-                    choppedMesh.position.set(choppedPosition.x, choppedPosition.y, choppedPosition.z);
-
-                    blocksToReturn.placed = placedMesh;
-                    if (!blocksToReturn.bonus) blocksToReturn.chopped = choppedMesh;
-                } else {
-                    this.state = this.STATES.MISSED;
-                }
-                
-                return blocksToReturn;
-            }
-
-            tick() {
-                if (this.state === this.STATES.ACTIVE) {
-                    const value = this.position[this.workingPlane];
-                    if (value > this.MOVE_AMOUNT || value < -this.MOVE_AMOUNT) this.reverseDirection();
-                    this.position[this.workingPlane] += this.direction;
-                    this.mesh.position[this.workingPlane] = this.position[this.workingPlane];
-                }
+        function initCategories() {
+            const categoryContainer = document.getElementById('category-grid');
+            const categoryColors = {
+                "Наука": "#3b82f6", // blue-500
+                "История": "#f59e0b", // amber-500
+                "Искусство": "#8b5cf6", // violet-500
+                "География": "#22c55e", // green-500
+                "Общие знания": "#ef4444" // red-500
+            };
+            categoryContainer.innerHTML = '';
+            for (const category in questions) {
+                const button = document.createElement('button');
+                button.className = `w-full text-white font-bold py-5 px-4 rounded-xl text-xl shadow-lg btn-fx`;
+                button.style.backgroundColor = categoryColors[category] || 'var(--accent-primary)';
+                button.textContent = category;
+                button.onclick = () => startGame(category);
+                categoryContainer.appendChild(button);
             }
         }
-
-        class Game {
-            constructor() {
-                this.STATES = { MENU: 'menu', PLAYING: 'playing', PAUSED: 'paused', ENDED: 'ended', RESETTING: 'resetting' };
-                
-                this.stage = new Stage();
-                this.ui = {
-                    body: document.body,
-                    mainMenu: document.getElementById('main-menu'),
-                    rulesModal: document.getElementById('rules-modal'),
-                    inGameUI: document.getElementById('in-game-ui'),
-                    pauseMenu: document.getElementById('pause-menu'),
-                    gameOverMenu: document.getElementById('game-over-menu'),
-                    score: document.getElementById('score'),
-                    highScore: document.getElementById('high-score'),
-                    finalScore: document.getElementById('final-score'),
-                    gameOverHighScore: document.getElementById('game-over-high-score'),
-                    perfectPlacementText: document.getElementById('perfect-placement-text'),
-                    gameCanvas: document.getElementById('game')
-                };
-                this.buttons = {
-                    start: document.getElementById('start-button'),
-                    rules: document.getElementById('rules-button'),
-                    closeRules: document.getElementById('close-rules-button'),
-                    pause: document.getElementById('pause-button'),
-                    resume: document.getElementById('resume-button'),
-                    restart: document.getElementById('restart-button'),
-                    menu: document.getElementById('menu-button'),
-                    restartGameOver: document.getElementById('restart-game-over-button'),
-                    menuGameOver: document.getElementById('menu-game-over-button')
-                };
-
-                this.newBlocks = new THREE.Group();
-                this.placedBlocks = new THREE.Group();
-                this.choppedBlocks = new THREE.Group();
-                this.perfectSliceGroup = new THREE.Group();
-                this.starsGroup = new THREE.Group();
-                this.stage.add(this.newBlocks);
-                this.stage.add(this.placedBlocks);
-                this.stage.add(this.choppedBlocks);
-                this.stage.add(this.perfectSliceGroup);
-                this.stage.scene.add(this.starsGroup);
-                
-                this.perfectCombo = 0;
-                this.initialBlockSize = { width: 10, depth: 10 };
-                this.blocksSinceColorChange = 0;
-                
-                this.bgColors = {
-                    top: new THREE.Color(0x1a237e),
-                    bottom: new THREE.Color(0x0d47a1),
-                    targetTop: new THREE.Color(0x1a237e),
-                    targetBottom: new THREE.Color(0x0d47a1)
-                };
-
-                // --- Yandex Integration Properties ---
-                this.ysdk = null;
-                this.player = null;
-                this.lang = 'ru'; // Default language
-                this.translations = {
-                    // Russian
-                    ru: {
-                        play: 'Играть',
-                        rules: 'Правила',
-                        highscore_menu: 'Рекорд',
-                        rules_title: 'Правила Игры',
-                        rules_p1: 'Ваша задача — построить как можно более высокую башню, устанавливая блоки друг на друга.',
-                        rules_li1: 'Нажимайте на экран (или пробел), чтобы остановить движущийся блок.',
-                        rules_li2: 'Часть блока, вышедшая за пределы нижнего, отколется.',
-                        rules_li3: 'Башня станет уже, и строить будет сложнее!',
-                        rules_combo_title: '⭐ Идеальное Комбо:',
-                        rules_combo_li1: 'Установите <strong>6 блоков идеально</strong> подряд, чтобы активировать комбо.',
-                        rules_combo_li2: 'Каждое следующее идеальное попадание будет <strong>увеличивать размер</strong> платформы, возвращая ее к первоначальной ширине!',
-                        rules_close: 'Понятно',
-                        perfect: 'ИДЕАЛЬНО!',
-                        resume: 'Продолжить',
-                        restart: 'Заново',
-                        menu: 'В меню',
-                        gameover_title: 'Игра окончена',
-                        your_score: 'Ваш счет',
-                        highscore_gameover: 'Рекорд',
-                        play_again: 'Играть снова',
-                    },
-                    // English
-                    en: {
-                        play: 'Play',
-                        rules: 'Rules',
-                        highscore_menu: 'Highscore',
-                        rules_title: 'Game Rules',
-                        rules_p1: 'Your goal is to build the tallest tower possible by stacking blocks on top of each other.',
-                        rules_li1: 'Tap the screen (or press space) to stop the moving block.',
-                        rules_li2: 'The part of the block that goes beyond the one below will be chopped off.',
-                        rules_li3: 'The tower will get narrower, making it harder to build!',
-                        rules_combo_title: '⭐ Perfect Combo:',
-                        rules_combo_li1: 'Stack <strong>6 blocks perfectly</strong> in a row to activate the combo.',
-                        rules_combo_li2: 'Each subsequent perfect hit will <strong>increase the platform size</strong>, restoring it to its original width!',
-                        rules_close: 'Got it',
-                        perfect: 'PERFECT!',
-                        resume: 'Resume',
-                        restart: 'Restart',
-                        menu: 'Menu',
-                        gameover_title: 'Game Over',
-                        your_score: 'Your Score',
-                        highscore_gameover: 'Highscore',
-                        play_again: 'Play Again',
-                    },
-                     // Turkish
-                    tr: {
-                        play: 'Oyna',
-                        rules: 'Kurallar',
-                        highscore_menu: 'Yüksek Skor',
-                        rules_title: 'Oyun Kuralları',
-                        rules_p1: 'Amacınız, blokları üst üste yığarak mümkün olan en yüksek kuleyi inşa etmektir.',
-                        rules_li1: 'Hareket eden bloğu durdurmak için ekrana dokunun (veya boşluk tuşuna basın).',
-                        rules_li2: 'Bloğun alttakinin ötesine geçen kısmı kesilecektir.',
-                        rules_li3: 'Kule daralacak ve inşa etmeyi zorlaştıracaktır!',
-                        rules_combo_title: '⭐ Mükemmel Kombo:',
-                        rules_combo_li1: 'Komboyu etkinleştirmek için üst üste <strong>6 bloğu mükemmel</strong> bir şekilde yerleştirin.',
-                        rules_combo_li2: 'Sonraki her mükemmel vuruş, platform boyutunu <strong>artıracak</strong> ve orijinal genişliğine geri döndürecektir!',
-                        rules_close: 'Anladım',
-                        perfect: 'MÜKEMMEL!',
-                        resume: 'Devam Et',
-                        restart: 'Yeniden Başla',
-                        menu: 'Menü',
-                        gameover_title: 'Oyun Bitti',
-                        your_score: 'Skorunuz',
-                        highscore_gameover: 'Yüksek Skor',
-                        play_again: 'Tekrar Oyna',
-                    }
-                };
-                
-                this.init();
+        
+        function initStats() {
+            const defaultCategoryStats = { totalQuestionsAnswered: 0, totalCorrect: 0, highScore: 0 };
+            const initialStats = {};
+            for (const category in questions) {
+                initialStats[category] = { ...defaultCategoryStats };
             }
+            return initialStats;
+        }
 
-            async init() {
-                try {
-                    this.ysdk = await YaGames.init();
-                    console.log('Yandex SDK initialized');
-                    
-                    // Determine language
-                    this.lang = this.ysdk.environment.i18n.lang;
-                    if (!this.translations[this.lang]) {
-                        this.lang = 'en'; // Fallback to English
-                    }
-                    this.setLanguage();
-
-                    // Authorize player
-                    this.player = await this.ysdk.getPlayer();
-                    console.log('Player authorized');
-
-                    await this.loadHighScore();
-
-                } catch (error) {
-                    console.error('Yandex SDK init failed:', error);
-                    // Fallback to local storage if SDK fails
-                    this.player = null; 
-                    await this.loadHighScore();
+        function loadStats() {
+            const savedStats = localStorage.getItem('quizStats');
+            stats = savedStats ? JSON.parse(savedStats) : initStats();
+            for (const category in questions) {
+                if (!stats[category]) {
+                    stats[category] = { totalQuestionsAnswered: 0, totalCorrect: 0, highScore: 0 };
                 }
-
-                this.addStars();
-                this.bindEvents();
-                this.setState(this.STATES.MENU);
-                this.tick();
-            }
-
-            setLanguage() {
-                const langData = this.translations[this.lang];
-                document.querySelectorAll('[data-lang]').forEach(el => {
-                    const key = el.getAttribute('data-lang');
-                    if (langData[key]) {
-                        el.innerHTML = langData[key];
-                    }
-                });
-            }
-
-            async saveHighScore() {
-                const dataToSave = { highScore: this.highScore };
-                if (this.player) {
-                    try {
-                        await this.player.setData(dataToSave);
-                        console.log('High score saved to Yandex Cloud');
-                    } catch (e) {
-                        console.error('Yandex Cloud save failed:', e);
-                        localStorage.setItem('TowerBlocksHighScore', this.highScore.toString()); // Fallback
-                    }
-                } else {
-                    localStorage.setItem('TowerBlocksHighScore', this.highScore.toString());
-                }
-            }
-
-            async loadHighScore() {
-                let loadedData = { highScore: 0 };
-                if (this.player) {
-                    try {
-                        const data = await this.player.getData(['highScore']);
-                        if (data && data.highScore) {
-                           loadedData = data;
-                        }
-                    } catch (e) {
-                        console.error('Yandex Cloud load failed:', e);
-                        loadedData.highScore = parseInt(localStorage.getItem('TowerBlocksHighScore') || '0', 10); // Fallback
-                    }
-                } else {
-                    loadedData.highScore = parseInt(localStorage.getItem('TowerBlocksHighScore') || '0', 10);
-                }
-                this.highScore = loadedData.highScore;
-                this.ui.highScore.innerText = this.highScore;
-            }
-            
-            showBannerAd() {
-                if(this.ysdk) {
-                    this.ysdk.adv.showBannerAdv()
-                        .catch(e => console.error("Banner Ad Error:", e));
-                }
-            }
-            
-            showInterstitialAd() {
-                 if(this.ysdk) {
-                    this.ysdk.adv.showFullscreenAdv({
-                        callbacks: {
-                            onClose: (wasShown) => console.log('Interstitial Ad closed. Was shown:', wasShown),
-                            onError: (error) => console.error('Interstitial Ad Error:', error)
-                        }
-                    });
-                }
-            }
-
-            bindEvents() {
-                this.buttons.start.addEventListener('click', () => this.startGame());
-                this.buttons.rules.addEventListener('click', () => this.ui.rulesModal.classList.remove('hidden'));
-                this.buttons.closeRules.addEventListener('click', () => this.ui.rulesModal.classList.add('hidden'));
-                this.buttons.pause.addEventListener('click', () => this.togglePause());
-                this.buttons.resume.addEventListener('click', () => this.togglePause());
-                this.buttons.restart.addEventListener('click', () => this.restartGame());
-                this.buttons.menu.addEventListener('click', () => this.goToMenu());
-                this.buttons.restartGameOver.addEventListener('click', () => this.restartGame());
-                this.buttons.menuGameOver.addEventListener('click', () => this.goToMenu());
-                
-                window.addEventListener('keydown', (e) => { if (e.keyCode === 32) this.onAction(); });
-                this.stage.container.addEventListener('click', () => this.onAction());
-                this.stage.container.addEventListener('touchstart', (e) => {
-                    e.preventDefault();
-                    this.onAction();
-                });
-            }
-
-            setState(newState) {
-                this.state = newState;
-                
-                this.ui.mainMenu.classList.add('hidden');
-                this.ui.rulesModal.classList.add('hidden');
-                this.ui.inGameUI.classList.add('hidden');
-                this.ui.pauseMenu.classList.add('hidden');
-                this.ui.gameOverMenu.classList.add('hidden');
-                this.ui.gameCanvas.style.display = 'none';
-                document.getElementById('container').className = 'container';
-                
-                this.showBannerAd(); // Show banner on every state change
-
-                switch (newState) {
-                    case this.STATES.MENU:
-                        this.ui.mainMenu.classList.remove('hidden');
-                        this.bgColors.targetTop.setHex(0x1a237e);
-                        this.bgColors.targetBottom.setHex(0x0d47a1);
-                        break;
-                    case this.STATES.PLAYING:
-                        this.ui.inGameUI.classList.remove('hidden');
-                        this.ui.gameCanvas.style.display = 'block';
-                        document.getElementById('container').classList.add('playing');
-                        break;
-                    case this.STATES.PAUSED:
-                        this.ui.inGameUI.classList.remove('hidden');
-                        this.ui.pauseMenu.classList.remove('hidden');
-                        this.ui.gameCanvas.style.display = 'block';
-                        break;
-                    case this.STATES.ENDED:
-                        this.ui.inGameUI.classList.remove('hidden');
-                        this.ui.gameOverMenu.classList.remove('hidden');
-                        this.ui.gameCanvas.style.display = 'block';
-                        document.getElementById('container').classList.add('ended');
-                        break;
-                }
-            }
-
-            onAction() {
-                if (this.state === this.STATES.PLAYING) {
-                    this.placeBlock();
-                }
-            }
-            
-            togglePause() {
-                if (this.state === this.STATES.PLAYING) {
-                    this.setState(this.STATES.PAUSED);
-                } else if (this.state === this.STATES.PAUSED) {
-                    this.setState(this.STATES.PLAYING);
-                }
-            }
-
-            startGame() {
-                if (this.state !== this.STATES.PLAYING) {
-                    this.reset();
-                    this.setState(this.STATES.PLAYING);
-                    this.addBlock();
-                }
-            }
-            
-            goToMenu() {
-                this.setState(this.STATES.RESETTING);
-                setTimeout(() => {
-                    this.reset();
-                    this.setState(this.STATES.MENU);
-                }, 500);
-            }
-
-            restartGame() {
-                this.setState(this.STATES.RESETTING);
-                const oldBlocks = this.placedBlocks.children;
-                const removeSpeed = 0.2;
-                const delayAmount = 0.02;
-
-                for (let i = 0; i < oldBlocks.length; i++) {
-                    TweenLite.to(oldBlocks[i].scale, removeSpeed, { x: 0, y: 0, z: 0, delay: (oldBlocks.length - i) * delayAmount, ease: Power1.easeIn });
-                }
-                
-                setTimeout(() => {
-                    this.startGame();
-                }, (oldBlocks.length * delayAmount + removeSpeed) * 1000);
-            }
-            
-            reset() {
-                [this.newBlocks, this.placedBlocks, this.choppedBlocks, this.perfectSliceGroup].forEach(group => {
-                    while(group.children.length > 0) group.remove(group.children[0]);
-                });
-                this.blocks = [];
-                this.perfectCombo = 0;
-                this.blocksSinceColorChange = 0;
-                this.addBlock(); 
-                this.stage.setCamera(2, 0);
-                this.ui.score.innerText = '0';
-            }
-
-            placeBlock() {
-                const currentBlock = this.blocks[this.blocks.length - 1];
-                if (!currentBlock || currentBlock.state !== currentBlock.STATES.ACTIVE) return;
-
-                const newBlocks = currentBlock.place();
-                this.newBlocks.remove(currentBlock.mesh);
-
-                if (newBlocks.placed) {
-                    this.placedBlocks.add(newBlocks.placed);
-                    this.blocksSinceColorChange++;
-                    
-                    if(this.blocksSinceColorChange >= 5) {
-                        this.blocksSinceColorChange = 0;
-                        this.bgColors.targetBottom.copy(this.bgColors.targetTop);
-                        this.bgColors.targetTop.copy(this.getPastelColor(currentBlock.color));
-                    }
-
-
-                    if (newBlocks.bonus) {
-                        this.perfectCombo++;
-                        
-                        if (this.perfectCombo >= 6) {
-                            const comboBonus = (this.perfectCombo - 5) * 0.25;
-                            const newWidth = Math.min(this.initialBlockSize.width, currentBlock.originalDimension.width + comboBonus);
-                            const newDepth = Math.min(this.initialBlockSize.depth, currentBlock.originalDimension.depth + comboBonus);
-
-                            currentBlock.dimension.width = newWidth;
-                            currentBlock.dimension.depth = newDepth;
-                            
-                            newBlocks.placed.scale.set(
-                                newWidth / currentBlock.originalDimension.width,
-                                1,
-                                newDepth / currentBlock.originalDimension.depth
-                            );
-                        }
-                        
-                        this.showPerfectPlacementText();
-                        this.triggerVibration();
-                        this.triggerPerfectSlice(newBlocks.placed.position, currentBlock.dimension);
-                    } else {
-                        this.perfectCombo = 0;
-                    }
-                }
-                
-                if (newBlocks.chopped) {
-                    this.choppedBlocks.add(newBlocks.chopped);
-                    const positionParams = { y: '-=30', ease: Power1.easeIn, onComplete: () => this.choppedBlocks.remove(newBlocks.chopped) };
-                    const plane = newBlocks.plane;
-                    if (newBlocks.chopped.position[plane] > newBlocks.placed.position[plane]) {
-                        positionParams[plane] = `+=${40 * Math.abs(newBlocks.direction)}`;
-                    } else {
-                        positionParams[plane] = `-=${40 * Math.abs(newBlocks.direction)}`;
-                    }
-                    TweenLite.to(newBlocks.chopped.position, 1, positionParams);
-                }
-
-                this.addBlock();
-            }
-
-            addBlock() {
-                const lastBlock = this.blocks.length > 0 ? this.blocks[this.blocks.length - 1] : null;
-                if (lastBlock && lastBlock.state === lastBlock.STATES.MISSED) {
-                    return this.endGame();
-                }
-                
-                const score = Math.max(0, this.blocks.length - 1);
-                this.ui.score.innerText = String(score);
-
-                let newDimensions = null;
-                if (this.perfectCombo >= 6 && lastBlock) {
-                    newDimensions = {
-                        width: lastBlock.dimension.width,
-                        depth: lastBlock.dimension.depth
-                    };
-                }
-
-                const newKidOnTheBlock = new Block(lastBlock, newDimensions);
-                this.blocks.push(newKidOnTheBlock);
-                
-                if (newKidOnTheBlock.state === newKidOnTheBlock.STATES.ACTIVE) {
-                    this.newBlocks.add(newKidOnTheBlock.mesh);
-                } else {
-                    this.placedBlocks.add(newKidOnTheBlock.mesh);
-                }
-
-                this.stage.setCamera(this.blocks.length * 2);
-            }
-            
-            showPerfectPlacementText() {
-                const text = this.ui.perfectPlacementText;
-                text.style.transform = 'translateY(20px)';
-                TweenLite.to(text.style, 0.3, { opacity: 1 });
-                TweenLite.to(text, 0.4, { transform: 'translateY(0px)' });
-                TweenLite.to(text.style, 0.3, { opacity: 0, delay: 0.5 });
-            }
-
-            triggerVibration() {
-                if (navigator.vibrate) {
-                    navigator.vibrate(100);
-                }
-            }
-
-            triggerPerfectSlice(position, dimension) {
-                const sliceHeight = 0.1;
-                const padding = 1.5;
-                const sliceGeometry = new THREE.BoxGeometry(dimension.width + padding, sliceHeight, dimension.depth + padding);
-                const sliceMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true });
-                const sliceMesh = new THREE.Mesh(sliceGeometry, sliceMaterial);
-                
-                sliceMesh.position.set(position.x + dimension.width / 2, position.y + (dimension.height/2), position.z + dimension.depth / 2);
-                sliceMesh.scale.set(0, 1, 0);
-                this.perfectSliceGroup.add(sliceMesh);
-                
-                TweenLite.to(sliceMesh.scale, 0.2, { x: 1, z: 1, ease: Power1.easeOut });
-                TweenLite.to(sliceMesh.scale, 0.3, { x: 0, z: 0, ease: Power1.easeIn, delay: 0.2, onComplete: () => {
-                    this.perfectSliceGroup.remove(sliceMesh);
-                }});
-            }
-            
-            addStars() {
-                const starGeometry = new THREE.SphereGeometry(0.1, 8, 8);
-                const starMaterial = new THREE.MeshBasicMaterial({ color: 0xffffff });
-                for(let i = 0; i < 150; i++) {
-                    const star = new THREE.Mesh(starGeometry, starMaterial);
-                    star.position.set(
-                        (Math.random() - 0.5) * 200,
-                        (Math.random() - 0.5) * 200,
-                        (Math.random() - 0.5) * 200
-                    );
-                    this.starsGroup.add(star);
-                }
-            }
-            
-            animateStars() {
-                const cameraY = this.stage.camera.position.y;
-                // Move the entire starfield with the camera
-                this.starsGroup.position.y = cameraY;
-                this.starsGroup.rotation.y += 0.0002;
-
-                // Wrap stars to create an infinite field
-                this.starsGroup.children.forEach(star => {
-                    if (star.position.y + cameraY < cameraY - 100) {
-                        star.position.y += 200;
-                    }
-                     if (star.position.y + cameraY > cameraY + 100) {
-                        star.position.y -= 200;
-                    }
-                });
-            }
-
-            getPastelColor(color) {
-                const tempColor = color.clone();
-                const white = new THREE.Color(0xffffff);
-                tempColor.lerp(white, 0.75); // Mix with 75% white for a milkier look
-                return tempColor;
-            }
-
-            updateBackground() {
-                // Slower lerp for a much smoother transition
-                this.bgColors.top.lerp(this.bgColors.targetTop, 0.005);
-                this.bgColors.bottom.lerp(this.bgColors.targetBottom, 0.005);
-                
-                const topHex = '#' + this.bgColors.top.getHexString();
-                const bottomHex = '#' + this.bgColors.bottom.getHexString();
-                
-                document.documentElement.style.setProperty('--bg-top', topHex);
-                document.documentElement.style.setProperty('--bg-bottom', bottomHex);
-            }
-
-            async endGame() {
-                const score = this.blocks.length - 2;
-                if (score > this.highScore) {
-                    this.highScore = score;
-                    this.ui.highScore.innerText = this.highScore;
-                    await this.saveHighScore();
-                }
-                this.ui.finalScore.innerText = score;
-                this.ui.gameOverHighScore.innerText = this.highScore;
-                this.setState(this.STATES.ENDED);
-                
-                if(score > 30) { // Показываем рекламу при счете больше 30
-                    this.showInterstitialAd();
-                }
-            }
-
-            tick = () => {
-                this.animateStars();
-
-                if (this.state === this.STATES.PLAYING || this.state === this.STATES.ENDED) {
-                    const topBlock = this.blocks[this.blocks.length - 1];
-                    if (topBlock && topBlock.state === topBlock.STATES.ACTIVE) {
-                        topBlock.tick();
-                    }
-                }
-                this.updateBackground();
-                this.stage.render();
-                requestAnimationFrame(this.tick);
             }
         }
 
-        window.onload = () => {
-             const game = new Game();
+        function saveStats() {
+            localStorage.setItem('quizStats', JSON.stringify(stats));
         }
-       
+
+        function displayStats() {
+            const statsContent = document.getElementById('stats-content');
+            let statsHtml = '';
+            const categories = Object.keys(questions);
+            if (categories.every(cat => stats[cat]?.totalQuestionsAnswered === 0)) {
+                 statsHtml = '<p class="text-center h-full flex items-center justify-center" style="color: var(--text-secondary);">Вы еще не играли. Сыграйте, чтобы увидеть статистику!</p>';
+            } else {
+                for (const category of categories) {
+                    const catStats = stats[category];
+                    const accuracy = catStats.totalQuestionsAnswered > 0 ? ((catStats.totalCorrect / catStats.totalQuestionsAnswered) * 100).toFixed(1) : 0;
+                    statsHtml += `
+                        <div class="p-4 rounded-lg" style="background-color: var(--bg-primary);">
+                            <h3 class="text-xl font-bold mb-2" style="color: var(--accent-primary);">${category}</h3>
+                            <div class="space-y-1 text-sm" style="color: var(--text-secondary);">
+                                <p class="flex justify-between"><span>Рекорд очков:</span> <span class="font-semibold" style="color: var(--text-primary);">${catStats.highScore}</span></p>
+                                <p class="flex justify-between"><span>Отвечено вопросов:</span> <span class="font-semibold" style="color: var(--text-primary);">${catStats.totalQuestionsAnswered}</span></p>
+                                <p class="flex justify-between"><span>Точность:</span> <span class="font-semibold" style="color: var(--text-primary);">${accuracy}%</span></p>
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+            statsContent.innerHTML = statsHtml;
+        }
+
+        function resetGameState() {
+            appState.currentCategory = '';
+            appState.currentQuestionIndex = 0;
+            appState.score = 0;
+            appState.correctAnswers = 0;
+            appState.incorrectAnswers = 0;
+            appState.shuffledQuestions = [];
+            clearInterval(appState.timer);
+            appState.isPaused = false;
+        }
+
+        function startGame(category) {
+            resetGameState();
+            appState.currentCategory = category;
+            const categoryQuestions = [...questions[category]];
+            appState.shuffledQuestions = categoryQuestions.sort(() => 0.5 - Math.random()).slice(0, appState.totalQuestionsPerGame);
+            showScreen('game-screen');
+            displayNextQuestion();
+        }
+
+        function displayNextQuestion() {
+            if (appState.currentQuestionIndex >= appState.shuffledQuestions.length) {
+                endGame();
+                return;
+            }
+            const question = appState.shuffledQuestions[appState.currentQuestionIndex];
+            questionTextEl.textContent = question.question;
+            optionsContainerEl.innerHTML = '';
+            const shuffledOptions = [...question.options].sort(() => 0.5 - Math.random());
+            shuffledOptions.forEach(option => {
+                const button = document.createElement('button');
+                button.className = "option-btn w-full text-left p-4 rounded-lg border-2 border-transparent focus:outline-none focus:ring-2 transition-all duration-200";
+                button.style.backgroundColor = 'var(--bg-tertiary)';
+                button.style.borderColor = 'var(--bg-tertiary)';
+                button.textContent = option;
+                button.onclick = () => selectAnswer(button, option, question.answer);
+                optionsContainerEl.appendChild(button);
+            });
+            scoreEl.textContent = `Очки: ${appState.score}`;
+            questionCounterEl.textContent = `Вопрос ${appState.currentQuestionIndex + 1} / ${appState.shuffledQuestions.length}`;
+            startTimer();
+        }
+
+        function startTimer() {
+            clearInterval(appState.timer);
+            appState.timeLeft = appState.timePerQuestion;
+            timerBarEl.style.width = '100%';
+            appState.timer = setInterval(() => {
+                if (appState.isPaused) return;
+                appState.timeLeft--;
+                const widthPercentage = (appState.timeLeft / appState.timePerQuestion) * 100;
+                timerBarEl.style.width = `${widthPercentage}%`;
+                if (appState.timeLeft <= 0) {
+                    clearInterval(appState.timer);
+                    handleTimeOut();
+                }
+            }, 1000);
+        }
+        
+        function selectAnswer(selectedButton, selectedOption, correctAnswer) {
+            clearInterval(appState.timer);
+            const allButtons = optionsContainerEl.querySelectorAll('button');
+            allButtons.forEach(btn => btn.disabled = true);
+            const isCorrect = selectedOption === correctAnswer;
+            
+            stats[appState.currentCategory].totalQuestionsAnswered++;
+            if (isCorrect) {
+                appState.score += 100 + (appState.timeLeft * 5);
+                appState.correctAnswers++;
+                selectedButton.classList.add('correct');
+                stats[appState.currentCategory].totalCorrect++;
+            } else {
+                appState.incorrectAnswers++;
+                selectedButton.classList.add('incorrect');
+                allButtons.forEach(btn => {
+                    if (btn.textContent === correctAnswer) btn.classList.add('correct');
+                });
+            }
+            saveStats();
+            setTimeout(() => {
+                appState.currentQuestionIndex++;
+                displayNextQuestion();
+            }, 1500);
+        }
+
+        function handleTimeOut() {
+            appState.incorrectAnswers++;
+            stats[appState.currentCategory].totalQuestionsAnswered++;
+            saveStats();
+            const allButtons = optionsContainerEl.querySelectorAll('button');
+            allButtons.forEach(btn => {
+                btn.disabled = true;
+                const correctAnswer = appState.shuffledQuestions[appState.currentQuestionIndex].answer;
+                if (btn.textContent === correctAnswer) btn.classList.add('correct');
+                else btn.style.opacity = '0.5';
+            });
+            setTimeout(() => {
+                appState.currentQuestionIndex++;
+                displayNextQuestion();
+            }, 1500);
+        }
+
+        function endGame() {
+            showScreen('game-over-screen');
+            document.getElementById('final-score').textContent = appState.score;
+            document.getElementById('results-summary').innerHTML = `
+                <p class="flex justify-between"><span>✔️ Правильно:</span> <span>${appState.correctAnswers}</span></p>
+                <p class="flex justify-between"><span>❌ Неправильно:</span> <span>${appState.incorrectAnswers}</span></p>
+            `;
+            if (appState.score > stats[appState.currentCategory].highScore) {
+                stats[appState.currentCategory].highScore = appState.score;
+            }
+            saveStats();
+        }
+        
+        function restartGame() {
+            if (appState.currentCategory) startGame(appState.currentCategory);
+            else showScreen('main-menu');
+        }
+
+        function togglePause() {
+            appState.isPaused = !appState.isPaused;
+            pauseOverlayEl.classList.toggle('hidden');
+            pauseOverlayEl.classList.toggle('flex');
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Запрет контекстного меню
+            document.body.addEventListener('contextmenu', (event) => {
+                event.preventDefault();
+            });
+
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            setTheme(savedTheme);
+            loadStats();
+            initCategories();
+            showScreen('main-menu');
+        });
     </script>
 </body>
 </html>
-
