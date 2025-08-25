@@ -2,12 +2,12 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
-    <title>Разум в Бой - Мобильная Викторина</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Квиз Баттл - Мобильная Викторина</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&family=Russo+One&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg-primary: #111827; /* gray-900 */
@@ -56,7 +56,7 @@
         html, body {
             height: 100%;
             width: 100%;
-            overflow: hidden; /* Запрет скролла всей страницы */
+            overflow: hidden;
             position: fixed;
         }
 
@@ -65,16 +65,22 @@
             background-color: var(--bg-primary);
             color: var(--text-primary);
             transition: background-color 0.5s, color 0.5s;
-            -webkit-user-select: none; /* Safari */
-            -ms-user-select: none; /* IE 10+ */
-            user-select: none; /* Standard syntax */
+            -webkit-user-select: none;
+            -ms-user-select: none;
+            user-select: none;
+        }
+        .game-title {
+            font-family: 'Russo One', sans-serif;
         }
         .screen {
             animation: fadeIn 0.5s ease-in-out;
-            height: 100vh; /* Каждый экран занимает всю высоту */
+            height: 100vh;
             width: 100%;
             display: flex;
             flex-direction: column;
+            padding: 1.5rem; /* p-6 */
+        }
+        .screen-center {
             justify-content: center;
         }
         .hidden { display: none !important; }
@@ -127,10 +133,9 @@
     <div id="app-container" class="relative w-full max-w-md mx-auto h-full">
         
         <!-- Главное меню -->
-        <div id="main-menu" class="screen p-6">
+        <div id="main-menu" class="screen screen-center">
             <div class="text-center">
-                <h1 class="text-5xl font-black uppercase text-transparent bg-clip-text bg-gradient-to-r" style="color: var(--accent-primary); background-image: linear-gradient(to right, var(--accent-primary), var(--accent-secondary));">Разум в Бой</h1>
-                <p class="text-lg mt-2 mb-12" style="color: var(--text-secondary);">Проверь свои знания и стань чемпионом!</p>
+                <h1 class="game-title text-6xl uppercase text-transparent bg-clip-text bg-gradient-to-r mb-12" style="color: var(--accent-primary); background-image: linear-gradient(to right, var(--accent-primary), var(--accent-secondary));">Квиз Баттл</h1>
             </div>
             <div class="space-y-4">
                 <button onclick="showScreen('category-selection')" class="w-full text-white font-bold py-4 px-6 rounded-xl text-xl shadow-lg btn-fx" style="background-color: var(--accent-primary);">Начать игру</button>
@@ -141,18 +146,18 @@
         </div>
 
         <!-- Выбор категории -->
-        <div id="category-selection" class="screen hidden p-6">
-            <h2 class="text-4xl font-bold text-center mb-8 flex-shrink-0">Выберите категорию</h2>
-            <div id="category-grid" class="grid grid-cols-1 gap-4 flex-grow overflow-y-auto">
+        <div id="category-selection" class="screen">
+            <h2 class="game-title text-4xl font-bold text-center mb-8 flex-shrink-0">Выберите категорию</h2>
+            <div id="category-grid" class="grid grid-cols-1 gap-4 flex-grow overflow-y-auto pr-2">
                 <!-- Категории -->
             </div>
             <div class="text-center mt-8 flex-shrink-0">
-                <button onclick="showScreen('main-menu')" class="font-bold py-2 px-8 rounded-lg" style="background-color: var(--bg-tertiary);">Назад</button>
+                <button onclick="showScreen('main-menu')" class="font-bold py-3 px-8 rounded-lg w-full" style="background-color: var(--bg-tertiary);">Назад</button>
             </div>
         </div>
 
         <!-- Игровое поле -->
-        <div id="game-screen" class="screen hidden p-4">
+        <div id="game-screen" class="screen screen-center p-4">
             <div class="w-full p-6 rounded-2xl shadow-2xl" style="background-color: var(--bg-secondary);">
                 <div class="flex justify-between items-center mb-6">
                     <div id="question-counter" class="text-sm font-semibold px-3 py-1 rounded-full" style="background-color: var(--bg-tertiary);"></div>
@@ -172,9 +177,9 @@
         </div>
 
         <!-- Экран статистики -->
-        <div id="stats-screen" class="screen hidden p-6 flex flex-col">
-            <h2 class="text-4xl font-bold text-center flex-shrink-0 pb-6">Статистика</h2>
-            <div id="stats-content" class="flex-grow overflow-y-auto space-y-4">
+        <div id="stats-screen" class="screen">
+            <h2 class="game-title text-4xl font-bold text-center flex-shrink-0 pb-6">Статистика</h2>
+            <div id="stats-content" class="flex-grow overflow-y-auto space-y-4 pr-2">
                 <!-- Статистика -->
             </div>
             <div class="pt-6 flex-shrink-0">
@@ -183,9 +188,9 @@
         </div>
 
         <!-- Экран окончания игры -->
-        <div id="game-over-screen" class="screen hidden p-6">
+        <div id="game-over-screen" class="screen screen-center">
             <div class="p-8 rounded-2xl shadow-2xl text-center" style="background-color: var(--bg-secondary);">
-                <h2 class="text-4xl font-bold mb-2">Игра окончена!</h2>
+                <h2 class="game-title text-4xl font-bold mb-2">Игра окончена!</h2>
                 <p class="mb-6" style="color: var(--text-secondary);">Отличная работа!</p>
                 <div class="mb-6">
                     <p class="text-lg">Ваш итоговый счет:</p>
@@ -201,9 +206,9 @@
         </div>
         
         <!-- Экран правил -->
-        <div id="rules-screen" class="screen hidden p-6">
+        <div id="rules-screen" class="screen screen-center">
             <div class="p-8 rounded-2xl shadow-2xl" style="background-color: var(--bg-secondary);">
-                <h2 class="text-3xl font-bold text-center mb-6">Правила Игры</h2>
+                <h2 class="game-title text-3xl font-bold text-center mb-6">Правила Игры</h2>
                 <div class="space-y-4 text-lg" style="color: var(--text-secondary);">
                     <p>✔️ Цель игры - ответить на <strong>15 вопросов</strong> из выбранной категории.</p>
                     <p>⏱️ На каждый вопрос дается <strong>20 секунд</strong>.</p>
@@ -218,23 +223,23 @@
         </div>
 
         <!-- Экран выбора темы -->
-        <div id="themes-screen" class="screen hidden p-6">
-            <h2 class="text-4xl font-bold text-center mb-8">Выберите тему</h2>
-            <div class="space-y-4">
+        <div id="themes-screen" class="screen screen-center">
+            <h2 class="game-title text-4xl font-bold text-center mb-8">Выберите тему</h2>
+            <div class="space-y-4 w-full">
                 <button onclick="setTheme('light')" class="w-full font-bold py-4 rounded-xl border-2" style="background-color: #f9fafb; color: #1f2937; border-color: #1f2937;">Светлая</button>
                 <button onclick="setTheme('dark')" class="w-full font-bold py-4 rounded-xl border-2" style="background-color: #111827; color: #f3f4f6; border-color: #f3f4f6;">Темная</button>
                 <button onclick="setTheme('ocean')" class="w-full font-bold py-4 rounded-xl border-2" style="background-color: #F0F9FF; color: #0C4A6E; border-color: #0C4A6E;">Океан</button>
                 <button onclick="setTheme('forest')" class="w-full font-bold py-4 rounded-xl border-2" style="background-color: #052e16; color: #d1fae5; border-color: #d1fae5;">Лес</button>
                 <button onclick="setTheme('sunset')" class="w-full font-bold py-4 rounded-xl border-2" style="background-color: #fff7ed; color: #7c2d12; border-color: #7c2d12;">Закат</button>
             </div>
-            <div class="text-center mt-8">
-                <button onclick="showScreen('main-menu')" class="font-bold py-2 px-8 rounded-lg" style="background-color: var(--bg-tertiary);">Назад</button>
+            <div class="text-center mt-8 w-full">
+                <button onclick="showScreen('main-menu')" class="font-bold py-3 px-8 rounded-lg w-full" style="background-color: var(--bg-tertiary);">Назад</button>
             </div>
         </div>
 
         <!-- Оверлей паузы -->
         <div id="pause-overlay" class="hidden fixed inset-0 bg-black bg-opacity-70 flex-col items-center justify-center space-y-6 z-50" style="animation: fadeIn 0.3s;">
-            <h2 class="text-5xl font-bold text-white">Пауза</h2>
+            <h2 class="game-title text-5xl font-bold text-white">Пауза</h2>
             <div class="w-full max-w-xs space-y-4 px-4">
                 <button onclick="togglePause()" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-3 rounded-lg text-lg">Продолжить</button>
                 <button onclick="restartGame()" class="w-full bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-3 rounded-lg text-lg">Начать заново</button>
@@ -761,7 +766,7 @@
             categoryContainer.innerHTML = '';
             for (const category in questions) {
                 const button = document.createElement('button');
-                button.className = `w-full text-white font-bold py-5 px-4 rounded-xl text-xl shadow-lg btn-fx`;
+                button.className = `w-full text-white font-bold py-4 px-4 rounded-xl text-xl shadow-lg btn-fx`;
                 button.style.backgroundColor = categoryColors[category] || 'var(--accent-primary)';
                 button.textContent = category;
                 button.onclick = () => startGame(category);
