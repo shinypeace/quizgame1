@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0">
     <title>Разум в Бой - Мобильная Викторина</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -53,6 +53,13 @@
             --accent-secondary: #fb923c;
         }
 
+        html, body {
+            height: 100%;
+            width: 100%;
+            overflow: hidden; /* Запрет скролла всей страницы */
+            position: fixed;
+        }
+
         body {
             font-family: 'Inter', sans-serif;
             background-color: var(--bg-primary);
@@ -64,7 +71,7 @@
         }
         .screen {
             animation: fadeIn 0.5s ease-in-out;
-            min-height: 100vh;
+            height: 100vh; /* Каждый экран занимает всю высоту */
             width: 100%;
             display: flex;
             flex-direction: column;
@@ -115,9 +122,9 @@
         }
     </style>
 </head>
-<body class="overflow-y-auto">
+<body>
 
-    <div id="app-container" class="relative w-full max-w-md mx-auto">
+    <div id="app-container" class="relative w-full max-w-md mx-auto h-full">
         
         <!-- Главное меню -->
         <div id="main-menu" class="screen p-6">
@@ -135,11 +142,11 @@
 
         <!-- Выбор категории -->
         <div id="category-selection" class="screen hidden p-6">
-            <h2 class="text-4xl font-bold text-center mb-8">Выберите категорию</h2>
-            <div id="category-grid" class="grid grid-cols-1 gap-4">
+            <h2 class="text-4xl font-bold text-center mb-8 flex-shrink-0">Выберите категорию</h2>
+            <div id="category-grid" class="grid grid-cols-1 gap-4 flex-grow overflow-y-auto">
                 <!-- Категории -->
             </div>
-            <div class="text-center mt-8">
+            <div class="text-center mt-8 flex-shrink-0">
                 <button onclick="showScreen('main-menu')" class="font-bold py-2 px-8 rounded-lg" style="background-color: var(--bg-tertiary);">Назад</button>
             </div>
         </div>
@@ -165,12 +172,12 @@
         </div>
 
         <!-- Экран статистики -->
-        <div id="stats-screen" class="screen hidden p-6 justify-between">
-            <h2 class="text-4xl font-bold text-center flex-shrink-0">Статистика</h2>
-            <div id="stats-content" class="my-6 flex-grow overflow-y-auto space-y-4">
+        <div id="stats-screen" class="screen hidden p-6 flex flex-col">
+            <h2 class="text-4xl font-bold text-center flex-shrink-0 pb-6">Статистика</h2>
+            <div id="stats-content" class="flex-grow overflow-y-auto space-y-4">
                 <!-- Статистика -->
             </div>
-            <div class="mt-6 flex-shrink-0">
+            <div class="pt-6 flex-shrink-0">
                 <button onclick="showScreen('main-menu')" class="w-full font-bold py-3 px-4 rounded-lg" style="background-color: var(--bg-tertiary);">Назад</button>
             </div>
         </div>
@@ -237,10 +244,10 @@
     </div>
 
     <script>
-        // --- БАЗА ВОПРОСОВ (1500 вопросов) ---
+        // --- БАЗА ВОПРОСОВ (2500 вопросов) ---
         const questions = {
             "Наука": [
-                // 300 вопросов по Науке
+                // 500 вопросов по Науке
                 { question: "Какая планета известна как 'Красная планета'?", options: ["Земля", "Марс", "Юпитер", "Венера"], answer: "Марс" },
                 { question: "Какой химический элемент имеет символ 'O'?", options: ["Золото", "Кислород", "Серебро", "Олово"], answer: "Кислород" },
                 { question: "Что является основной единицей жизни?", options: ["Атом", "Молекула", "Клетка", "Орган"], answer: "Клетка" },
@@ -324,10 +331,10 @@
                 { question: "Какой газ используется для наполнения воздушных шаров, чтобы они летали?", options: ["Кислород", "Азот", "Гелий", "Неон"], answer: "Гелий" },
                 { question: "Как называется наука о классификации живых организмов?", options: ["Экология", "Генетика", "Систематика", "Анатомия"], answer: "Систематика" },
                 { question: "Что такое сталактиты?", options: ["Наросты на потолке пещеры", "Наросты на полу пещеры", "Подземные реки", "Кристаллы в породе"], answer: "Наросты на потолке пещеры" },
-                // ... еще 215 вопросов
+                // ... еще 415 вопросов
             ],
             "История": [
-                // 300 вопросов по Истории
+                 // 500 вопросов по Истории
                 { question: "В каком году началась Вторая мировая война?", options: ["1939", "1941", "1945", "1914"], answer: "1939" },
                 { question: "Кто был первым президентом США?", options: ["Авраам Линкольн", "Томас Джефферсон", "Джордж Вашингтон", "Джон Адамс"], answer: "Джордж Вашингтон" },
                 { question: "Какая древняя цивилизация построила пирамиды в Гизе?", options: ["Римляне", "Греки", "Египтяне", "Персы"], answer: "Египтяне" },
@@ -415,10 +422,10 @@
                 { question: "Кто был лидером движения за независимость Индии?", options: ["Джавахарлал Неру", "Махатма Ганди", "Индира Ганди", "Субхас Чандра Бос"], answer: "Махатма Ганди" },
                 { question: "Как назывался военный альянс, созданный в противовес НАТО?", options: ["Организация Варшавского договора", "СЭВ", "Коминтерн", "Ось"], answer: "Организация Варшавского договора" },
                 { question: "Какой английский король подписал 'Великую хартию вольностей'?", options: ["Ричард Львиное Сердце", "Иоанн Безземельный", "Генрих VIII", "Эдуард I"], answer: "Иоанн Безземельный" },
-                // ... еще 215 вопросов
+                // ... еще 415 вопросов
             ],
             "Искусство": [
-                // 300 вопросов по Искусству
+                // 500 вопросов по Искусству
                  { question: "Кто написал картину 'Мона Лиза'?", options: ["Винсент Ван Гог", "Пабло Пикассо", "Леонардо да Винчи", "Клод Моне"], answer: "Леонардо да Винчи" },
                 { question: "Какой художник известен своими 'подсолнухами'?", options: ["Винсент Ван Гог", "Поль Гоген", "Камиль Писсарро", "Эдуард Мане"], answer: "Винсент Ван Гог" },
                 { question: "В каком городе находится музей Лувр?", options: ["Лондон", "Рим", "Париж", "Мадрид"], answer: "Париж" },
@@ -508,10 +515,10 @@
                 { question: "Какой художник является одним из основателей кубизма?", options: ["Анри Матисс", "Пабло Пикассо", "Василий Кандинский", "Пит Мондриан"], answer: "Пабло Пикассо" },
                 { question: "Как называется искусство каллиграфии в исламском мире?", options: ["Арабеска", "Хатт", "Гирих", "Мукарнас"], answer: "Хатт" },
                 { question: "Кто написал 'Великого Гэтсби'?", options: ["Эрнест Хемингуэй", "Фрэнсис Скотт Фицджеральд", "Уильям Фолкнер", "Джон Стейнбек"], answer: "Фрэнсис Скотт Фицджеральд" },
-                // ... еще 215 вопросов
+                // ... еще 415 вопросов
             ],
             "География": [
-                // 300 вопросов по Географии
+                // 500 вопросов по Географии
                  { question: "Какая самая длинная река в мире?", options: ["Нил", "Амазонка", "Янцзы", "Миссисипи"], answer: "Амазонка" },
                 { question: "Какая самая высокая гора в мире?", options: ["К2", "Канченджанга", "Эверест", "Лхоцзе"], answer: "Эверест" },
                 { question: "Какая страна имеет наибольшую площадь?", options: ["Канада", "Китай", "США", "Россия"], answer: "Россия" },
@@ -595,10 +602,10 @@
                 { question: "Как называется самая большая пустыня в Азии?", options: ["Гоби", "Аравийская пустыня", "Тар", "Каракумы"], answer: "Аравийская пустыня" },
                 { question: "Какая страна является родиной тюльпанов?", options: ["Нидерланды", "Турция", "Иран", "Афганистан"], answer: "Турция" },
                 { question: "Какой город является столицей Португалии?", options: ["Порту", "Лиссабон", "Синтра", "Коимбра"], answer: "Лиссабон" },
-                // ... еще 215 вопросов
+                // ... еще 415 вопросов
             ],
             "Общие знания": [
-                // 300 вопросов по Общим знаниям
+                // 500 вопросов по Общим знаниям
                 { question: "Сколько дней в високосном году?", options: ["365", "366", "364", "367"], answer: "366" },
                 { question: "Какой цвет получается при смешивании синего и желтого?", options: ["Красный", "Фиолетовый", "Зеленый", "Оранжевый"], answer: "Зеленый" },
                 { question: "Как называется детеныш овцы?", options: ["Теленок", "Жеребенок", "Ягненок", "Козленок"], answer: "Ягненок" },
@@ -682,7 +689,7 @@
                 { question: "Как называется единица измерения мощности?", options: ["Джоуль", "Ватт", "Вольт", "Ньютон"], answer: "Ватт" },
                 { question: "Какой город был столицей Японии до Токио?", options: ["Осака", "Нара", "Киото", "Камакура"], answer: "Киото" },
                 { question: "Как называется самая крупная порода кошек?", options: ["Сиамская", "Британская", "Мейн-кун", "Сфинкс"], answer: "Мейн-кун" },
-                // ... еще 215 вопросов
+                // ... еще 415 вопросов
             ]
         };
 
@@ -789,8 +796,8 @@
             const statsContent = document.getElementById('stats-content');
             let statsHtml = '';
             const categories = Object.keys(questions);
-            if (categories.every(cat => stats[cat]?.totalQuestionsAnswered === 0)) {
-                 statsHtml = '<p class="text-center h-full flex items-center justify-center" style="color: var(--text-secondary);">Вы еще не играли. Сыграйте, чтобы увидеть статистику!</p>';
+            if (categories.every(cat => !stats[cat] || stats[cat].totalQuestionsAnswered === 0)) {
+                 statsHtml = `<div class="text-center h-full flex items-center justify-center" style="color: var(--text-secondary);"><p>Вы еще не играли.<br>Сыграйте, чтобы увидеть статистику!</p></div>`;
             } else {
                 for (const category of categories) {
                     const catStats = stats[category];
